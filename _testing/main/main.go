@@ -1,7 +1,7 @@
 package main
 
 import (
-	"codingame-live-scoreboard/putevent/handler"
+	"codingame-live-scoreboard/api/putevent/handler"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
