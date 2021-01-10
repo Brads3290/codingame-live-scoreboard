@@ -2,8 +2,8 @@ package codezone_util
 
 import (
 	"bytes"
-	"codezone-codingame-live-scoreboard/constants"
-	"codezone-codingame-live-scoreboard/schema"
+	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/schema"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -98,4 +98,3 @@ func getCodinGameDataOnThread(roundId string, ce chan interface{}) {
 
 	ce <- retStruct
 }
-

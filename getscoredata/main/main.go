@@ -1,8 +1,8 @@
 package main
 
 import (
-	"codezone-codingame-live-scoreboard/codezone_util"
-	"codezone-codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/codezone_util"
+	"codingame-live-scoreboard/constants"
 	"context"
 	"errors"
 	"github.com/aws/aws-lambda-go/events"
@@ -19,7 +19,7 @@ import (
 //		- Total score in event
 //		- Current rank in event
 func handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	return codezone_util.UnifyLambdaResponse(ctx, func () (sts int, resp events.APIGatewayV2HTTPResponse, err error) {
+	return codezone_util.UnifyLambdaResponse(ctx, func() (sts int, resp interface{}, err error) {
 
 		evtGuid, ok := request.QueryStringParameters["evt"]
 		if !ok {
@@ -37,10 +37,10 @@ func handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		}
 
 		/*evtData contains:
-			- ID: str
-			- Name: str
-			- LastUpdated: int
-		 */
+		- ID: str
+		- Name: str
+		- LastUpdated: int
+		*/
 
 		lastUpdatedSecs, err := strconv.Atoi(evtData["lastUpdated"])
 		if err != nil {
@@ -51,7 +51,7 @@ func handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		now := time.Now()
 
 		if now.Sub(lastUpdated) > constants.MAX_EVENT_RECORD_AGE {
-			cdData, err := codezone_util.GetCodinGameData(evtGuid)
+			_, err := codezone_util.GetCodinGameData(evtGuid)
 			if err != nil {
 				return sts, resp, err
 			}
@@ -62,6 +62,7 @@ func handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		}
 
 		// Return the data to the client
+		return
 	})
 }
 

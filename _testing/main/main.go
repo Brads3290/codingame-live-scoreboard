@@ -1,9 +1,22 @@
 package main
 
-import "fmt"
+import (
+	"codingame-live-scoreboard/putevent/handler"
+	"context"
+	"fmt"
+	"github.com/aws/aws-lambda-go/events"
+	"log"
+)
 
 func main() {
+	req := events.APIGatewayV2HTTPRequest{
+		Body: `{"name": "Test Event"}`,
+	}
 
-	fmt.Println("Hello world")
+	resp, err := handler.Handle(context.TODO(), req)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	fmt.Printf("%v\v", resp)
 }

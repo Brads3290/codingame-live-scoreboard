@@ -1,71 +1,33 @@
 package codezone_util
 
 import (
-	"codezone-codingame-live-scoreboard/constants"
-	"codezone-codingame-live-scoreboard/dbutils"
-	"codezone-codingame-live-scoreboard/schema"
-	"errors"
-	"fmt"
+	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/schema"
+	"codingame-live-scoreboard/schema/errors"
+	"codingame-live-scoreboard/schema/shared_utils"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/uuid"
-	"strconv"
+	"log"
+	"time"
 )
 
-var sess = session.Must(session.NewSession())
+var sess = session.Must(session.NewSessionWithOptions(session.Options{
+	SharedConfigState: session.SharedConfigEnable,
+}))
 var dynamodbClient = dynamodb.New(sess)
 
-func createProcessedKey(keyVals []interface{}) (map[string]*dynamodb.AttributeValue, error) {
-	if len(keyVals) % 2 != 0 {
-		return nil, errors.New("keyVals must be provided as pairs of key/value")
-	}
-
-	processedKey := make(map[string]*dynamodb.AttributeValue)
-
-	keyMap := make(map[string]interface{})
-	for i := 0; i < len(keyVals); i += 2 {
-		switch kt := keyVals[i].(type) {
-		case string:
-			keyMap[kt] = keyVals[i + 1]
-		default:
-			return nil, errors.New(fmt.Sprintf("key value at position %v is not a string", i))
-		}
-	}
-
-	for k, v := range keyMap {
-		var a dynamodb.AttributeValue
-
-		switch vt := v.(type) {
-		case string:
-			a.SetS(vt)
-			break
-		case bool:
-			a.SetBOOL(vt)
-			break
-		case int:
-			a.SetS(strconv.Itoa(vt))
-			break
-		default:
-			return nil, errors.New("unsupported partKey type")
-		}
-
-		processedKey[k] = &a
-	}
-
-	return processedKey, nil
-}
-
 func GetItemFromDynamoDb(tbl string, keyVals ...interface{}) (map[string]string, error) {
-	processedKey, err := createProcessedKey(keyVals)
+	processedKey, err := shared_utils.CreateDynamoDbKeyValueMap(keyVals)
 	if err != nil {
 		return nil, err
 	}
 
 	consistentRead := false
-	gii := &dynamodb.GetItemInput {
+	gii := &dynamodb.GetItemInput{
 		ConsistentRead: &consistentRead,
-		Key: processedKey,
-		TableName: &tbl,
+		Key:            processedKey,
+		TableName:      &tbl,
 	}
 
 	res, err := dynamodbClient.GetItem(gii)
@@ -86,7 +48,7 @@ func GetItemFromDynamoDb(tbl string, keyVals ...interface{}) (map[string]string,
 }
 
 func BatchGetItemsFromDynamoDb(tbl string, keyVals ...interface{}) ([]map[string]string, error) {
-	processedKey, err := createProcessedKey(keyVals)
+	processedKey, err := shared_utils.CreateDynamoDbKeyValueMap(keyVals)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +57,7 @@ func BatchGetItemsFromDynamoDb(tbl string, keyVals ...interface{}) ([]map[string
 	ri := make(map[string]*dynamodb.KeysAndAttributes)
 	ri[tbl] = &dynamodb.KeysAndAttributes{
 		ConsistentRead: &consistentRead,
-		Keys: []map[string]*dynamodb.AttributeValue{processedKey},
+		Keys:           []map[string]*dynamodb.AttributeValue{processedKey},
 	}
 
 	bgii := &dynamodb.BatchGetItemInput{
@@ -128,11 +90,42 @@ func BatchGetItemsFromDynamoDb(tbl string, keyVals ...interface{}) ([]map[string
 
 func PutItemToDynamoDb(tableName string, dbWritable schema.DynamoDbWritable) error {
 	pii := &dynamodb.PutItemInput{
-		Item: dbWritable.ToDynamoDbMap(),
+		Item:      dbWritable.ToDynamoDbMap(),
 		TableName: &tableName,
 	}
 
 	_, err := dynamodbClient.PutItem(pii)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateItemInDynamoDb(tableName string, dbWritable schema.DynamoDbWritable, keyVals ...interface{}) error {
+	keys, err := shared_utils.CreateDynamoDbKeyValueMap(keyVals)
+	if err != nil {
+		return err
+	}
+
+	attrValues := dbWritable.ToDynamoDbMap()
+	attrValuesToWrite := make(map[string]*dynamodb.AttributeValue)
+
+	for k, v := range attrValues {
+		if _, ok := keys[k]; ok {
+			continue
+		}
+
+		attrValuesToWrite[k] = v
+	}
+
+	uii := &dynamodb.UpdateItemInput{
+		TableName:                 &tableName,
+		Key:                       keys,
+		ExpressionAttributeValues: attrValuesToWrite,
+	}
+
+	_, err = dynamodbClient.UpdateItem(uii)
 	if err != nil {
 		return err
 	}
@@ -244,12 +237,12 @@ func UpdateDatabaseWithScoreData(evtGuid string, data *schema.ScoreData) error {
 		return err
 	}
 
-	for _, dp := range roundPlayers {
+	for _, rp := range roundPlayers {
 
 		// If the round player is not in the database, they need adding to the database
 		found := false
 		for _, ap := range databasePlayers {
-			if ap.Name == dp.Name {
+			if ap.Name == rp.Name {
 				found = true
 				break
 			}
@@ -261,12 +254,14 @@ func UpdateDatabaseWithScoreData(evtGuid string, data *schema.ScoreData) error {
 				return err
 			}
 
-			dp.PlayerId = uid.String()
+			rp.PlayerId = uid.String()
 
-			err = PutItemToDynamoDb(constants.DB_TABLE_PLAYERS, dp)
+			err = PutItemToDynamoDb(constants.DB_TABLE_PLAYERS, rp)
 			if err != nil {
 				return err
 			}
+
+			databasePlayers = append(databasePlayers, rp)
 		}
 	}
 
@@ -274,6 +269,66 @@ func UpdateDatabaseWithScoreData(evtGuid string, data *schema.ScoreData) error {
 	// 3. Add results to database
 	//
 
-	// Then update the event to change last_update to now
+	resultList := make([]*schema.ResultData, 0)
+	for _, ar := range data.ActiveRounds {
+		for _, p := range ar.Players {
 
+			var dp *schema.PlayerData
+			for _, dpi := range databasePlayers {
+				if dpi.Name == p.Name {
+					dp = dpi
+					break
+				}
+			}
+
+			if dp == nil {
+				log.Printf("WARN: Player not found: " + p.Name)
+				continue
+			}
+
+			var rd schema.ResultData
+			rd.RoundId = ar.RoundId
+			rd.PlayerId = dp.PlayerId
+			rd.Score = p.Score
+			rd.Rank = p.Rank
+			rd.Status = p.SessionStatus
+
+			resultList = append(resultList, &rd)
+		}
+	}
+
+	chErr := make(chan error)
+	for _, rl := range resultList {
+		go func(rlInner *schema.ResultData) {
+			err := UpdateItemInDynamoDb(constants.DB_TABLE_RESULTS, rlInner, "Round_ID", rlInner.RoundId, "Player_ID", rlInner.PlayerId)
+			chErr <- err
+		}(rl)
+	}
+
+	errs := make([]error, 0)
+	for i := 0; i < len(resultList); i++ {
+		err = <-chErr
+
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) > 0 {
+		err = errors.NewComposite(errs...)
+		return err
+	}
+
+	// Then update the event to change last_update to now
+	w, err := NewGenericWritable("Last_Update", time.Now())
+	if err != nil {
+		return err
+	}
+
+	err = UpdateItemInDynamoDb(constants.DB_TABLE_EVENTS, w, "Event_ID", evtGuid)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
