@@ -8,12 +8,14 @@ import (
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/uuid"
+	logger "github.com/sirupsen/logrus"
 )
 
 // PUT /putevent
 // Body: { "name": "Event_Name" }
 func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	return codezone_util.UnifyLambdaResponse(ctx, func() (sts int, resp interface{}, err error) {
+		log := logger.WithField(constants.API_LOGGER_KEY, "putevent")
 
 		// Get the name from the request body
 		body := struct {
@@ -22,12 +24,14 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 
 		err = json.Unmarshal([]byte(request.Body), &body)
 		if err != nil {
+			log.Error("Failed to unmarshal JSON body:", err)
 			return
 		}
 
 		// Create a new event ID
 		u, err := uuid.NewRandom()
 		if err != nil {
+			log.Error("Failed to create new GUID:", err)
 			return
 		}
 
@@ -40,6 +44,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 
 		err = codezone_util.PutItemToDynamoDb(constants.DB_TABLE_EVENTS, model)
 		if err != nil {
+			log.Error("Failed to put item to DynamoDB:", err)
 			return
 		}
 
