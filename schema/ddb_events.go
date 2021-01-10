@@ -13,7 +13,7 @@ type EventModel struct {
 }
 
 func (e *EventModel) ToDynamoDbMap() map[string]*dynamodb.AttributeValue {
-	m, err := shared_utils.CreateDynamoDbKeyValueMap(
+	m, err := shared_utils.CreateKeyValuesFromList(
 		"Event_ID", e.EventId,
 		"Name", e.Name,
 		"Last_Updated", e.LastUpdated,

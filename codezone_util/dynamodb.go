@@ -17,8 +17,10 @@ var sess = session.Must(session.NewSessionWithOptions(session.Options{
 }))
 var dynamodbClient = dynamodb.New(sess)
 
+// GetItemFromDynamoDb retrieves a single item from a given table based on key/value pairs given as variadic arguments.
+// If no match is found, it will return nil.
 func GetItemFromDynamoDb(tbl string, keyVals ...interface{}) (map[string]string, error) {
-	processedKey, err := shared_utils.CreateDynamoDbKeyValueMap(keyVals)
+	processedKey, err := shared_utils.CreateKeyValuesFromList(keyVals)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +50,7 @@ func GetItemFromDynamoDb(tbl string, keyVals ...interface{}) (map[string]string,
 }
 
 func BatchGetItemsFromDynamoDb(tbl string, keyVals ...interface{}) ([]map[string]string, error) {
-	processedKey, err := shared_utils.CreateDynamoDbKeyValueMap(keyVals)
+	processedKey, err := shared_utils.CreateKeyValuesFromList(keyVals)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +105,7 @@ func PutItemToDynamoDb(tableName string, dbWritable schema.DynamoDbWritable) err
 }
 
 func UpdateItemInDynamoDb(tableName string, dbWritable schema.DynamoDbWritable, keyVals ...interface{}) error {
-	keys, err := shared_utils.CreateDynamoDbKeyValueMap(keyVals)
+	keys, err := shared_utils.CreateKeyValuesFromList(keyVals)
 	if err != nil {
 		return err
 	}

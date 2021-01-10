@@ -8,12 +8,10 @@ import (
 	"time"
 )
 
-func CreateDynamoDbKeyValueMap(keyVals ...interface{}) (map[string]*dynamodb.AttributeValue, error) {
+func CreateKeyValuesFromList(keyVals ...interface{}) (map[string]*dynamodb.AttributeValue, error) {
 	if len(keyVals)%2 != 0 {
 		return nil, errors.New("keyVals must be provided as pairs of key/value")
 	}
-
-	processedKey := make(map[string]*dynamodb.AttributeValue)
 
 	keyMap := make(map[string]interface{})
 	for i := 0; i < len(keyVals); i += 2 {
@@ -24,6 +22,12 @@ func CreateDynamoDbKeyValueMap(keyVals ...interface{}) (map[string]*dynamodb.Att
 			return nil, errors.New(fmt.Sprintf("key value at position %v is not a string", i))
 		}
 	}
+
+	return CreateKeyValuesFromMap(keyMap), nil
+}
+
+func CreateKeyValuesFromMap(keyMap map[string]interface{}) map[string]*dynamodb.AttributeValue {
+	processedKey := make(map[string]*dynamodb.AttributeValue)
 
 	for k, v := range keyMap {
 		var a dynamodb.AttributeValue
@@ -51,11 +55,11 @@ func CreateDynamoDbKeyValueMap(keyVals ...interface{}) (map[string]*dynamodb.Att
 			i := strconv.FormatInt(t, 10)
 			a.SetS(i)
 		default:
-			return nil, errors.New("unsupported partKey type")
+			panic(errors.New("unsupported partKey type"))
 		}
 
 		processedKey[k] = &a
 	}
 
-	return processedKey, nil
+	return processedKey
 }
