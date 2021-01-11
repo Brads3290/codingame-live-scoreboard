@@ -58,7 +58,7 @@ func attributeValueFromBool(av *dynamodb.AttributeValue, b bool) error {
 }
 
 func attributeValueFromInt(av *dynamodb.AttributeValue, i int64) error {
-	av.SetS(strconv.FormatInt(i, 10))
+	av.SetN(strconv.FormatInt(i, 10))
 	return nil
 }
 

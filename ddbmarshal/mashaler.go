@@ -10,7 +10,7 @@ func Unmarshal(m map[string]*dynamodb.AttributeValue, v interface{}) error {
 	rv := reflect.ValueOf(v)
 
 	// As we need to get rv.Elem(), we need to check that rv is Interface or Ptr
-	if rv.Kind() != reflect.Ptr && rv.Kind() == reflect.Interface {
+	if rv.Kind() != reflect.Ptr && rv.Kind() != reflect.Interface {
 		return errors.New("v is not settable")
 	}
 
@@ -50,7 +50,7 @@ func Unmarshal(m map[string]*dynamodb.AttributeValue, v interface{}) error {
 		if attrVal, ok := m[ddbName]; ok {
 
 			// Found the key in the map, so set the field value
-			err := setValueFromAttributeValue(attrVal, rv.Field(i))
+			err := setValueFromAttributeValue(attrVal, rv.Field(i), rt.Field(i).Type)
 			if err != nil {
 				return err
 			}
@@ -89,6 +89,12 @@ func marshalInner(v interface{}, km keyMode) (map[string]*dynamodb.AttributeValu
 	m := make(map[string]*dynamodb.AttributeValue)
 
 	rv := reflect.ValueOf(v)
+
+	// Deference rv
+	if rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+	}
+
 	rt := rv.Type()
 
 	// Iterate the fields in v and create keys in m based on either their names,

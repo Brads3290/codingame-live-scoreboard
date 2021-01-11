@@ -1,4 +1,4 @@
-package schema
+package dbschema
 
 import (
 	"codingame-live-scoreboard/schema/shared_utils"
@@ -7,9 +7,9 @@ import (
 )
 
 type EventModel struct {
-	EventId     string
-	Name        string
-	LastUpdated *time.Time
+	EventId     string     `ddb:"Event_ID,key"`
+	Name        string     `ddb:"Name"`
+	LastUpdated *time.Time `ddb:"Last_Updated"`
 }
 
 func (e *EventModel) ToDynamoDbMap() map[string]*dynamodb.AttributeValue {

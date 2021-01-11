@@ -44,7 +44,7 @@ func CreateKeyValuesFromMap(keyMap map[string]interface{}) map[string]*dynamodb.
 			break
 		case *time.Time:
 			if vt == nil {
-				a.SetNULL(true)
+				a.SetS("")
 			} else {
 				t := vt.Unix()
 				i := strconv.FormatInt(t, 10)
@@ -62,4 +62,20 @@ func CreateKeyValuesFromMap(keyMap map[string]interface{}) map[string]*dynamodb.
 	}
 
 	return processedKey
+}
+
+func AttributeHasNonEmptyValue(av *dynamodb.AttributeValue) bool {
+	if av.BOOL != nil {
+		return true
+	}
+
+	if av.N != nil && len(*av.N) > 0 {
+		return true
+	}
+
+	if av.S != nil && len(*av.S) > 0 {
+		return true
+	}
+
+	return false
 }

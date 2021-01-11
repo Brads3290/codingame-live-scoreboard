@@ -1,9 +1,9 @@
-package handler
+package putevent
 
 import (
 	"codingame-live-scoreboard/codezone_util"
 	"codingame-live-scoreboard/constants"
-	"codingame-live-scoreboard/schema"
+	"codingame-live-scoreboard/schema/dbschema"
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
@@ -36,7 +36,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		}
 
 		// Create a new event
-		model := &schema.EventModel{
+		model := &dbschema.EventModel{
 			EventId:     u.String(),
 			Name:        body.Name,
 			LastUpdated: nil,

@@ -2,6 +2,7 @@ package codezone_util
 
 import (
 	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/ddbmarshal"
 	"codingame-live-scoreboard/schema"
 	"codingame-live-scoreboard/schema/errors"
 	"codingame-live-scoreboard/schema/shared_utils"
@@ -18,11 +19,10 @@ var sess = session.Must(session.NewSessionWithOptions(session.Options{
 var dynamodbClient = dynamodb.New(sess)
 
 // GetItemFromDynamoDb retrieves a single item from a given table based on key/value pairs given as variadic arguments.
-// If no match is found, it will return nil.
-func GetItemFromDynamoDb(tbl string, keyVals ...interface{}) (map[string]string, error) {
-	processedKey, err := shared_utils.CreateKeyValuesFromList(keyVals)
+func GetItemFromDynamoDb(tbl string, v interface{}, keyVals ...interface{}) error {
+	processedKey, err := shared_utils.CreateKeyValuesFromList(keyVals...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	consistentRead := false
@@ -34,23 +34,60 @@ func GetItemFromDynamoDb(tbl string, keyVals ...interface{}) (map[string]string,
 
 	res, err := dynamodbClient.GetItem(gii)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	retVal := make(map[string]string)
 	if res.Item == nil {
-		retVal = nil
-	} else {
-		for k, v := range res.Item {
-			retVal[k] = v.String()
+		return errors.NewItemNotFound("item not found")
+	}
+
+	err = ddbmarshal.Unmarshal(res.Item, v)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func PopulateItemFromDynamoDb(tbl string, v interface{}) error {
+
+	// Get the keys out of the interface
+	keysAv, err := ddbmarshal.MarshalOnlyKeys(v)
+	if err != nil {
+		return err
+	}
+
+	// Check that each key has a non-empty value
+	for k, kv := range keysAv {
+		if !shared_utils.AttributeHasNonEmptyValue(kv) {
+			return errors.New("missing key: " + k)
 		}
 	}
 
-	return retVal, err
+	var gii dynamodb.GetItemInput
+	gii.SetConsistentRead(false)
+	gii.SetKey(keysAv)
+	gii.SetTableName(tbl)
+
+	gio, err := dynamodbClient.GetItem(&gii)
+	if err != nil {
+		return err
+	}
+
+	if gio.Item == nil {
+		return errors.NewItemNotFound("item not found")
+	}
+
+	err = ddbmarshal.Unmarshal(gio.Item, v)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func BatchGetItemsFromDynamoDb(tbl string, keyVals ...interface{}) ([]map[string]string, error) {
-	processedKey, err := shared_utils.CreateKeyValuesFromList(keyVals)
+	processedKey, err := shared_utils.CreateKeyValuesFromList(keyVals...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +127,7 @@ func BatchGetItemsFromDynamoDb(tbl string, keyVals ...interface{}) ([]map[string
 	return ret, nil
 }
 
-func PutItemToDynamoDb(tableName string, dbWritable schema.DynamoDbWritable) error {
+func PutItemToDynamoDb(tableName string, dbWritable schema.DynamoDbReadable) error {
 	pii := &dynamodb.PutItemInput{
 		Item:      dbWritable.ToDynamoDbMap(),
 		TableName: &tableName,
@@ -104,8 +141,8 @@ func PutItemToDynamoDb(tableName string, dbWritable schema.DynamoDbWritable) err
 	return nil
 }
 
-func UpdateItemInDynamoDb(tableName string, dbWritable schema.DynamoDbWritable, keyVals ...interface{}) error {
-	keys, err := shared_utils.CreateKeyValuesFromList(keyVals)
+func UpdateItemInDynamoDb(tableName string, dbWritable schema.DynamoDbReadable, keyVals ...interface{}) error {
+	keys, err := shared_utils.CreateKeyValuesFromList(keyVals...)
 	if err != nil {
 		return err
 	}

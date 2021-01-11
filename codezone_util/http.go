@@ -3,17 +3,38 @@ package codezone_util
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 )
 
 type lambdaResponseData struct {
-	Success bool `json:"success"`
-	Error string `json:"error"`
-	Data interface{} `json:"data"`
+	Success bool        `json:"success"`
+	Error   string      `json:"error"`
+	Data    interface{} `json:"data"`
 }
 
-func UnifyLambdaResponse(ctx context.Context, f func () (int, interface{}, error)) (events.APIGatewayV2HTTPResponse, error) {
-	sts, dataResp, err := f()
+func UnifyLambdaResponse(ctx context.Context, f func() (int, interface{}, error)) (events.APIGatewayV2HTTPResponse, error) {
+	var sts int
+	var dataResp interface{}
+	var err error
+
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				sts = 500
+				dataResp = nil
+
+				if e, ok := r.(error); ok {
+					err = e
+				} else {
+					err = errors.New(fmt.Sprint(r))
+				}
+			}
+		}()
+
+		sts, dataResp, err = f()
+	}()
 
 	responseData := lambdaResponseData{
 		Success: true,
@@ -37,8 +58,8 @@ func UnifyLambdaResponse(ctx context.Context, f func () (int, interface{}, error
 
 		responseData = lambdaResponseData{
 			Success: false,
-			Data: nil,
-			Error: err.Error(),
+			Data:    nil,
+			Error:   err.Error(),
 		}
 
 		b, err = json.Marshal(responseData)

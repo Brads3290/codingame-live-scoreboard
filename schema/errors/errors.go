@@ -4,8 +4,8 @@ import (
 	baseerrors "errors"
 )
 
-func New(s string) error {
-	return baseerrors.New(s)
+func New(err string) error {
+	return baseerrors.New(err)
 }
 
 func NewComposite(errs ...error) CompositeError {
@@ -14,4 +14,10 @@ func NewComposite(errs ...error) CompositeError {
 	}
 
 	return c
+}
+
+func NewItemNotFound(err string) ItemNotFound {
+	return ItemNotFound{
+		error: New(err),
+	}
 }

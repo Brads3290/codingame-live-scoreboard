@@ -14,7 +14,7 @@ func (g *GenericWritable) ToDynamoDbMap() map[string]*dynamodb.AttributeValue {
 }
 
 func NewGenericWritable(keyVals ...interface{}) (*GenericWritable, error) {
-	d, err := shared_utils.CreateKeyValuesFromList(keyVals)
+	d, err := shared_utils.CreateKeyValuesFromList(keyVals...)
 	if err != nil {
 		return nil, err
 	}
