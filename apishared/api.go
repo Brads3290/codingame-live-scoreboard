@@ -74,6 +74,9 @@ func UnifyLambdaResponse(ctx context.Context, f func() (int, interface{}, error)
 
 	resp.Body = string(b)
 	resp.StatusCode = sts
+	resp.Headers = map[string]string{
+		"Content-Type": "application/json",
+	}
 
 	return resp, nil
 }
