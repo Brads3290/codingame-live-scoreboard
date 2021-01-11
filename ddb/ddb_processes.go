@@ -140,8 +140,20 @@ func DeleteEvent(eventId string) error {
 		return err
 	}
 
-	// Delete each
+	// Delete result records
 	err = DeleteResultRecords(results)
+	if err != nil {
+		return err
+	}
+
+	// Get all players associated with the event
+	players, err := GetAllPlayersInEvent(eventId)
+	if err != nil {
+		return err
+	}
+
+	// Delete player records
+	err = DeletePlayerRecords(players)
 	if err != nil {
 		return err
 	}

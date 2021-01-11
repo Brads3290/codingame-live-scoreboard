@@ -2,6 +2,7 @@ package main
 
 import (
 	deleteevent "codingame-live-scoreboard/api/deleteevent/handler"
+	deleteround "codingame-live-scoreboard/api/deleteround/handler"
 	getevent "codingame-live-scoreboard/api/getevent/handler"
 	putevent "codingame-live-scoreboard/api/putevent/handler"
 	putround "codingame-live-scoreboard/api/putround/handler"
@@ -13,16 +14,14 @@ import (
 )
 
 func main() {
-	//testPutRound("round_1")
-	//testPutRound("round_2")
-	//testPutRound("round_3")
-
-	//testPutRound("245eac65-0a53-4778-93a0-27aab09fff1a", "15368558b7207af754ef51f1dbc58d3f18a003d")
-	//testDeleteEvent("3d2183f5-9238-4959-95dd-79d9b088a17f")
 
 	//testPutEvent()
+	//testPutRound("245eac65-0a53-4778-93a0-27aab09fff1a", "15368558b7207af754ef51f1dbc58d3f18a003d")
 
-	testUpdateEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
+	testDeleteEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
+	//testDeleteRound("245eac65-0a53-4778-93a0-27aab09fff1a" ,"15368558b7207af754ef51f1dbc58d3f18a003d")
+
+	//testUpdateEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
 }
 
 func testPutEvent() {
@@ -79,6 +78,23 @@ func testDeleteEvent(eventId string) {
 	}
 
 	resp, err := deleteevent.Handle(context.TODO(), req)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%v\v", resp)
+}
+
+func testDeleteRound(eventId string, roundId string) {
+	req := events.APIGatewayV2HTTPRequest{
+		PathParameters: map[string]string{
+			"event_id": eventId,
+			"round_id": roundId,
+		},
+	}
+
+	resp, err := deleteround.Handle(context.TODO(), req)
 
 	if err != nil {
 		log.Fatal(err)

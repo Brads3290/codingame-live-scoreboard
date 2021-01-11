@@ -174,6 +174,15 @@ func DeleteResultRecords(results []dbschema.ResultModel) error {
 	return nil
 }
 
+func DeletePlayerRecords(players []dbschema.PlayerModel) error {
+	err := BatchDeleteItemsFromDynamoDb(constants.DB_TABLE_PLAYERS, players)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func AddPlayersToEvent(evtGuid string, players []dbschema.PlayerModel) error {
 
 	// Ensure that the players are in this event
