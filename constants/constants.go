@@ -19,7 +19,7 @@ const (
 
 // LOGGING
 const (
-	API_LOGGER_KEY = "ApiEndpoint"
+	API_LOGGER_FIELD = "ApiEndpoint"
 )
 
 // URLS

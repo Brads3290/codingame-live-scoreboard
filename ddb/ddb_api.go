@@ -1,7 +1,7 @@
 package ddb
 
 import (
-	"codingame-live-scoreboard/ddb/ddbmarshal"
+	"codingame-live-scoreboard/ddb/orm"
 	"codingame-live-scoreboard/schema/errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,7 +18,7 @@ var dynamodbClient = dynamodb.New(sess)
 
 // GetItemFromDynamoDb retrieves a single item from a given table based on key/value pairs given as variadic arguments.
 func GetItemFromDynamoDb(tbl string, v interface{}, keyVals map[string]interface{}) error {
-	processedKey := ddbmarshal.CreateKeyValuesFromMap(keyVals)
+	processedKey := orm.CreateKeyValuesFromMap(keyVals)
 
 	consistentRead := false
 	gii := &dynamodb.GetItemInput{
@@ -36,7 +36,7 @@ func GetItemFromDynamoDb(tbl string, v interface{}, keyVals map[string]interface
 		return errors.NewItemNotFound("item not found")
 	}
 
-	err = ddbmarshal.Unmarshal(res.Item, v)
+	err = orm.Unmarshal(res.Item, v)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func queryItemsFromDynamoDbInternal(tbl string, v interface{}, keyVals map[strin
 		attrNames[nk] = &k
 
 		nv := ":VAL_" + strconv.Itoa(i)
-		attrVals[nv] = ddbmarshal.CreateAttributeValueFromValue(kv)
+		attrVals[nv] = orm.CreateAttributeValueFromValue(kv)
 
 		keyConditionExpressionList[i] = fmt.Sprintf("%s = %s", nk, nv)
 		i++
@@ -92,7 +92,7 @@ func queryItemsFromDynamoDbInternal(tbl string, v interface{}, keyVals map[strin
 		attrNames[nk] = &k
 
 		nv := ":VAL_" + strconv.Itoa(i+j)
-		attrVals[nv] = ddbmarshal.CreateAttributeValueFromValue(kv)
+		attrVals[nv] = orm.CreateAttributeValueFromValue(kv)
 
 		filterExpressionList[j] = fmt.Sprintf("%s = %s", nk, nv)
 		j++
@@ -123,7 +123,7 @@ func queryItemsFromDynamoDbInternal(tbl string, v interface{}, keyVals map[strin
 		// Note: reflect.New returns a pointer value
 		newObj := reflect.New(dut)
 
-		err = ddbmarshal.Unmarshal(item, newObj.Interface())
+		err = orm.Unmarshal(item, newObj.Interface())
 		if err != nil {
 			return err
 		}
@@ -142,14 +142,14 @@ func queryItemsFromDynamoDbInternal(tbl string, v interface{}, keyVals map[strin
 func PopulateItemFromDynamoDb(tbl string, v interface{}) error {
 
 	// Get the keys out of the interface
-	keysAv, err := ddbmarshal.MarshalOnlyKeys(v)
+	keysAv, err := orm.MarshalOnlyKeys(v)
 	if err != nil {
 		return err
 	}
 
 	// Check that each key has a non-empty value
 	for k, kv := range keysAv {
-		if !ddbmarshal.AttributeHasNonEmptyValue(kv) {
+		if !orm.AttributeHasNonEmptyValue(kv) {
 			return errors.New("missing key: " + k)
 		}
 	}
@@ -168,7 +168,7 @@ func PopulateItemFromDynamoDb(tbl string, v interface{}) error {
 		return errors.NewItemNotFound("item not found")
 	}
 
-	err = ddbmarshal.Unmarshal(gio.Item, v)
+	err = orm.Unmarshal(gio.Item, v)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func PopulateItemFromDynamoDb(tbl string, v interface{}) error {
 }
 
 func PutItemToDynamoDb(tableName string, v interface{}) error {
-	avMap, err := ddbmarshal.Marshal(v)
+	avMap, err := orm.Marshal(v)
 	if err != nil {
 		return err
 	}
@@ -194,10 +194,50 @@ func PutItemToDynamoDb(tableName string, v interface{}) error {
 	return nil
 }
 
-func UpdateItemInDynamoDb(tableName string, v interface{}, keyVals map[string]interface{}) error {
-	keys := ddbmarshal.CreateKeyValuesFromMap(keyVals)
+func BatchPutItemsToDynamoDb(tableName string, v interface{}) error {
 
-	attrValuesToWrite, err := ddbmarshal.MarshalNoKeys(v)
+	// v must be a slice
+	rt := reflect.TypeOf(v)
+	if rt.Kind() != reflect.Slice {
+		return errors.New("v must be a slice")
+	}
+
+	rv := reflect.ValueOf(v)
+
+	// Iterate the slice..
+
+	requestItems := make(map[string][]*dynamodb.WriteRequest)
+	requestItems[tableName] = make([]*dynamodb.WriteRequest, 0)
+	for i := 0; i < rv.Len(); i++ {
+		vi := rv.Index(i)
+		attrs, err := orm.Marshal(vi.Interface())
+		if err != nil {
+			return err
+		}
+
+		var pr dynamodb.PutRequest
+		pr.SetItem(attrs)
+
+		var wr dynamodb.WriteRequest
+		wr.SetPutRequest(&pr)
+
+		requestItems[tableName] = append(requestItems[tableName], &wr)
+	}
+
+	var bwii dynamodb.BatchWriteItemInput
+	bwii.SetRequestItems(requestItems)
+
+	_, err := dynamodbClient.BatchWriteItem(&bwii)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateItemInDynamoDb(tableName string, v interface{}, keyVals map[string]interface{}) error {
+	keys := orm.CreateKeyValuesFromMap(keyVals)
+	attrs, err := orm.MarshalNoKeys(v)
 	if err != nil {
 		return err
 	}
@@ -205,9 +245,26 @@ func UpdateItemInDynamoDb(tableName string, v interface{}, keyVals map[string]in
 	var uii dynamodb.UpdateItemInput
 	uii.SetTableName(tableName)
 	uii.SetKey(keys)
-	uii.SetExpressionAttributeValues(attrValuesToWrite)
+	uii.SetExpressionAttributeValues(attrs)
 
 	_, err = dynamodbClient.UpdateItem(&uii)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateItemAttrsInDynamoDb(tableName string, keyVals map[string]interface{}, attrVals map[string]interface{}) error {
+	keys := orm.CreateKeyValuesFromMap(keyVals)
+	attrs := orm.CreateKeyValuesFromMap(attrVals)
+
+	var uii dynamodb.UpdateItemInput
+	uii.SetTableName(tableName)
+	uii.SetKey(keys)
+	uii.SetExpressionAttributeValues(attrs)
+
+	_, err := dynamodbClient.UpdateItem(&uii)
 	if err != nil {
 		return err
 	}

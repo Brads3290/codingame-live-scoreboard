@@ -1,18 +1,20 @@
 package schema
 
 type ScoreData struct {
-	EventId      string
-	ActiveRounds []RoundData `json:"active_rounds"`
+	EventId string
+	Rounds  []RoundData `json:"active_rounds"`
 }
 
 type RoundData struct {
-	EventId string
-	RoundId string            `json:"round_id"`
-	Mode    string            `json:"mode"`
-	Players []PlayerRoundData `json:"players"`
+	EventId  string
+	RoundId  string            `json:"round_id"`
+	Mode     string            `json:"mode"`
+	Finished bool              `json:"finished"`
+	Players  []PlayerRoundData `json:"players"`
 }
 
 type PlayerRoundData struct {
+	PlayerId      string `json:"player_id"`
 	Name          string `json:"name"`
 	Rank          int    `json:"rank"`
 	Score         int    `json:"score"`

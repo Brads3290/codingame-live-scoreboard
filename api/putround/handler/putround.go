@@ -45,8 +45,9 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 			return 401, nil, errors.New("round_id must be specified")
 		}
 
-		// Set/overwrite eventId
+		// Set/overwrite eventId; the round also starts active
 		r.EventId = eventId.String()
+		r.Active = true
 
 		// Write to the database
 		err = ddb.PutItemToDynamoDb(constants.DB_TABLE_ROUNDS, r)

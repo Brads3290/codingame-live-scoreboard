@@ -5,6 +5,7 @@ import (
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema"
+	"codingame-live-scoreboard/schema/cgschema"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -50,7 +51,7 @@ func GetCodinGameData(evtGuid string) (*schema.ScoreData, error) {
 
 	var sd schema.ScoreData
 	sd.EventId = evtGuid
-	sd.ActiveRounds = roundData
+	sd.Rounds = roundData
 
 	return &sd, nil
 }
@@ -79,7 +80,7 @@ func getCodinGameDataOnThread(roundId string, ce chan interface{}) {
 		return
 	}
 
-	var resStruct schema.CodinGameClashReportResponse
+	var resStruct cgschema.ClashReportResponse
 	err = json.Unmarshal(br, &resStruct)
 
 	var retStruct schema.RoundData
@@ -89,6 +90,7 @@ func getCodinGameDataOnThread(roundId string, ce chan interface{}) {
 
 	for _, v := range resStruct.Players {
 		var retPlayer schema.PlayerRoundData
+		retPlayer.PlayerId = v.PlayerId
 		retPlayer.Name = v.Nickname
 		retPlayer.Rank = v.Rank
 		retPlayer.Score = v.RoundScore

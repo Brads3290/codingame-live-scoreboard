@@ -17,7 +17,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 	// Path params will contain a 'guid' parameter
 
 	return api.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
-		log := logrus.WithField(constants.API_LOGGER_KEY, "getevent")
+		log := logrus.WithField(constants.API_LOGGER_FIELD, "getevent")
 
 		// Check that the url has a {guid}
 		guidStr, ok := request.PathParameters["guid"]

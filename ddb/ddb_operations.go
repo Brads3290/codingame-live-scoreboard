@@ -6,6 +6,48 @@ import (
 	"codingame-live-scoreboard/schema/errors"
 )
 
+func GetEvent(evtGuid string) (*dbschema.EventModel, error) {
+	var em dbschema.EventModel
+	err := GetItemFromDynamoDb(constants.DB_TABLE_EVENTS, &em, map[string]interface{}{
+		"Event_ID": evtGuid,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &em, nil
+}
+
+func SetEventUpdating(evtGuid string, isUpdating bool) error {
+	err := UpdateItemAttrsInDynamoDb(constants.DB_TABLE_EVENTS, map[string]interface{}{
+		"Event_ID": evtGuid,
+	}, map[string]interface{}{
+		"Is_Updating": isUpdating,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetRoundActive(evtGuid string, roundId string, isActive bool) error {
+	err := UpdateItemAttrsInDynamoDb(constants.DB_TABLE_ROUNDS, map[string]interface{}{
+		"Event_ID": evtGuid,
+		"Round_ID": roundId,
+	}, map[string]interface{}{
+		"Is_Active": isActive,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetAllRoundsForEvent(evtGuid string) ([]dbschema.RoundModel, error) {
 	var rms []dbschema.RoundModel
 
@@ -99,6 +141,32 @@ func GetAllResultsForRounds(roundIds ...string) ([]dbschema.ResultModel, error) 
 	return results, nil
 }
 
+func AddPlayersToEvent(evtGuid string, players []dbschema.PlayerModel) error {
+
+	// Ensure that the players are in this event
+	newPlayers := make([]dbschema.PlayerModel, len(players))
+	for i, v := range players {
+		v.EventId = evtGuid
+		newPlayers[i] = v
+	}
+
+	err := BatchPutItemsToDynamoDb(constants.DB_TABLE_PLAYERS, newPlayers)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func AddResultsToDynamoDb(results []dbschema.ResultModel) error {
+	err := BatchPutItemsToDynamoDb(constants.DB_TABLE_RESULTS, results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 //func UpdateDatabaseWithScoreData(evtGuid string, data *schema.ScoreData) error {
 //
 //	// Start by updating the rounds
@@ -117,7 +185,7 @@ func GetAllResultsForRounds(roundIds ...string) ([]dbschema.ResultModel, error) 
 //	for _, ar := range activeRounds {
 //
 //		found := false
-//		for _, d := range data.ActiveRounds {
+//		for _, d := range data.Rounds {
 //			if d.RoundId == ar.RoundId {
 //				found = true
 //				break
@@ -138,7 +206,7 @@ func GetAllResultsForRounds(roundIds ...string) ([]dbschema.ResultModel, error) 
 //
 //	// Extract players as *schema.Player
 //	roundPlayers := make([]*schema.PlayerData, 0)
-//	for _, ar := range data.ActiveRounds {
+//	for _, ar := range data.Rounds {
 //		for _, p := range ar.Players {
 //
 //			// Does this already exist?
@@ -199,7 +267,7 @@ func GetAllResultsForRounds(roundIds ...string) ([]dbschema.ResultModel, error) 
 //	//
 //
 //	resultList := make([]*schema.ResultData, 0)
-//	for _, ar := range data.ActiveRounds {
+//	for _, ar := range data.Rounds {
 //		for _, p := range ar.Players {
 //
 //			var dp *schema.PlayerData

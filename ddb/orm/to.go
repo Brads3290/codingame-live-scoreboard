@@ -1,4 +1,4 @@
-package ddbmarshal
+package orm
 
 import (
 	"errors"
