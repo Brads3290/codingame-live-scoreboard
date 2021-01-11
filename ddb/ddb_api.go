@@ -54,16 +54,6 @@ func QueryItemsFromDynamoDbWithFilter(tbl string, v interface{}, keyVals map[str
 }
 
 func queryItemsFromDynamoDbInternal(tbl string, v interface{}, keyVals map[string]interface{}, filterVals map[string]interface{}) error {
-
-	// Validate that v is a slice
-	rt := reflect.TypeOf(v)
-	if rt.Kind() != reflect.Ptr || rt.Elem().Kind() != reflect.Slice {
-		return errors.New("QueryItemsFromDynamoDb requires a pointer to a slice as argument 'v'")
-	}
-
-	ut := rt.Elem().Elem()
-	rv := reflect.ValueOf(v).Elem()
-
 	var qi dynamodb.QueryInput
 	qi.SetTableName(tbl)
 
@@ -112,34 +102,26 @@ func queryItemsFromDynamoDbInternal(tbl string, v interface{}, keyVals map[strin
 		return err
 	}
 
-	// Ensure ut is deferenced
-	dut := ut
-	if dut.Kind() == reflect.Ptr {
-		dut = ut.Elem()
+	err = orm.UnmarshalList(qo.Items, v)
+	if err != nil {
+		return err
 	}
 
-	// Assign a new slice to rv, so that we replace any existing values and also
-	// so if it's nil, we end up with an empty slice rather than nil
-	newRv := reflect.MakeSlice(rt.Elem(), 0, 0)
-	rv.Set(newRv)
+	return nil
+}
 
-	for _, item := range qo.Items {
+func ScanItemsFromDynamoDb(tbl string, v interface{}) error {
+	var sii dynamodb.ScanInput
+	sii.SetTableName(tbl)
 
-		// Create a new object of the underlying slice value
-		// Note: reflect.New returns a pointer value
-		newObj := reflect.New(dut)
+	sio, err := dynamodbClient.Scan(&sii)
+	if err != nil {
+		return err
+	}
 
-		err = orm.Unmarshal(item, newObj.Interface())
-		if err != nil {
-			return err
-		}
-
-		newObjElem := newObj
-		if ut.Kind() != reflect.Ptr {
-			newObjElem = newObjElem.Elem()
-		}
-
-		rv.Set(reflect.Append(rv, newObjElem))
+	err = orm.UnmarshalList(sio.Items, v)
+	if err != nil {
+		return err
 	}
 
 	return nil

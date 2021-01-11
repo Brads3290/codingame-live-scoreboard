@@ -65,6 +65,56 @@ func Unmarshal(m map[string]*dynamodb.AttributeValue, v interface{}) error {
 	return nil
 }
 
+func UnmarshalList(m []map[string]*dynamodb.AttributeValue, v interface{}) error {
+	// Validate that v is a slice
+	rt := reflect.TypeOf(v)
+	if rt.Kind() != reflect.Ptr || rt.Elem().Kind() != reflect.Slice {
+		return errors.New("QueryItemsFromDynamoDb requires a pointer to a slice as argument 'v'")
+	}
+
+	// The underlying type of the slice
+	ut := rt.Elem().Elem()
+
+	// The slice value itself (dereferenced)
+	rv := reflect.ValueOf(v).Elem()
+
+	// Assign a new slice to rv, so that we replace any existing values and also
+	// so if it's nil, we end up with an empty slice rather than nil
+	newRv := reflect.MakeSlice(rt.Elem(), 0, 0)
+	rv.Set(newRv)
+
+	// Ensure ut is not a pointer by dereferencing it. We can convert back into a pointer
+	// later if need be.
+	dut := ut
+	if dut.Kind() == reflect.Ptr {
+		dut = ut.Elem()
+	}
+
+	// Iterate the list of items and unmarshal each of them into a new object of the
+	// dereferenced list base type.
+	for _, item := range m {
+
+		// Create a new object of the underlying slice value
+		// Note: reflect.New returns a pointer value
+		newObj := reflect.New(dut)
+
+		err := Unmarshal(item, newObj.Interface())
+		if err != nil {
+			return err
+		}
+
+		// If the original underlying type is not a pointer, newObjElem shouldn't be either.
+		newObjElem := newObj
+		if ut.Kind() != reflect.Ptr {
+			newObjElem = newObjElem.Elem()
+		}
+
+		rv.Set(reflect.Append(rv, newObjElem))
+	}
+
+	return nil
+}
+
 func Marshal(v interface{}) (map[string]*dynamodb.AttributeValue, error) {
 	return marshalInner(v, kmAll)
 }

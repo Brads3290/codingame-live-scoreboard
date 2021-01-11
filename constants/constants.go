@@ -19,7 +19,8 @@ const (
 
 // LOGGING
 const (
-	API_LOGGER_FIELD = "ApiEndpoint"
+	API_LOGGER_FIELD      = "ApiEndpoint"
+	PROGRAM_CONTEXT_FIELD = "ProgramContext"
 )
 
 // URLS
