@@ -18,7 +18,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 			return 404, nil, errors.New("missing event_id")
 		}
 
-		round_id, ok := request.PathParameters["round_id"]
+		roundId, ok := request.PathParameters["round_id"]
 		if !ok {
 			return 404, nil, errors.New("missing round_id")
 		}
@@ -29,7 +29,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 			return 401, nil, errors.New("invalid event_id")
 		}
 
-		err = ddb.DeleteRound(round_id, eventId.String())
+		err = ddb.DeleteRound(roundId, eventId.String())
 		if err != nil {
 			return 500, nil, err
 		}
