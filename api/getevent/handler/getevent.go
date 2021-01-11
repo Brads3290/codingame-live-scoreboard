@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"codingame-live-scoreboard/codezone_util"
+	"codingame-live-scoreboard/api"
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/dbschema"
@@ -16,7 +16,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 
 	// Path params will contain a 'guid' parameter
 
-	return codezone_util.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
+	return api.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
 		log := logrus.WithField(constants.API_LOGGER_KEY, "getevent")
 
 		// Check that the url has a {guid}

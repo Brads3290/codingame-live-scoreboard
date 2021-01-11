@@ -1,7 +1,7 @@
 package main
 
 import (
-	"codingame-live-scoreboard/codezone_util"
+	"codingame-live-scoreboard/api"
 	"codingame-live-scoreboard/codingame"
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/ddb"
@@ -21,7 +21,7 @@ import (
 //		- Total score in event
 //		- Current rank in event
 func handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	return codezone_util.UnifyLambdaResponse(ctx, func() (sts int, resp interface{}, err error) {
+	return api.UnifyLambdaResponse(ctx, func() (sts int, resp interface{}, err error) {
 
 		evtGuid, ok := request.QueryStringParameters["evt"]
 		if !ok {
