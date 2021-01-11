@@ -69,7 +69,7 @@ func Marshal(v interface{}) (map[string]*dynamodb.AttributeValue, error) {
 	return marshalInner(v, kmAll)
 }
 
-func MarshalNoKeys(v interface{}) (map[string]*dynamodb.AttributeValue, error) {
+func MarshalOnlyAttrs(v interface{}) (map[string]*dynamodb.AttributeValue, error) {
 	return marshalInner(v, kmNoKeys)
 }
 

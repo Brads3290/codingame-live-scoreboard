@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -200,7 +201,21 @@ func PutItemToDynamoDb(tableName string, v interface{}) error {
 }
 
 func BatchPutItemsToDynamoDb(tableName string, v interface{}) error {
+	return batchWriteItemsToDynamoDbInternal(tableName, v, bwtPut)
+}
 
+func BatchDeleteItemsFromDynamoDb(tableName string, v interface{}) error {
+	return batchWriteItemsToDynamoDbInternal(tableName, v, bwtDelete)
+}
+
+type batchWriteType int
+
+const (
+	bwtPut batchWriteType = iota
+	bwtDelete
+)
+
+func batchWriteItemsToDynamoDbInternal(tableName string, v interface{}, bwt batchWriteType) error {
 	// v must be a slice
 	rt := reflect.TypeOf(v)
 	if rt.Kind() != reflect.Slice {
@@ -214,32 +229,52 @@ func BatchPutItemsToDynamoDb(tableName string, v interface{}) error {
 		return nil
 	}
 
-	// Iterate the slice..
+	// Iterate the slice and create the WriteRequests
 
-	requestItems := make(map[string][]*dynamodb.WriteRequest)
-	requestItems[tableName] = make([]*dynamodb.WriteRequest, 0)
+	requestItems := make([]*dynamodb.WriteRequest, 0)
 	for i := 0; i < rv.Len(); i++ {
 		vi := rv.Index(i)
-		attrs, err := orm.Marshal(vi.Interface())
+
+		var wr dynamodb.WriteRequest
+		if bwt == bwtPut {
+			attrs, err := orm.Marshal(vi.Interface())
+			if err != nil {
+				return err
+			}
+
+			var pr dynamodb.PutRequest
+			pr.SetItem(attrs)
+			wr.SetPutRequest(&pr)
+		} else if bwt == bwtDelete {
+			attrs, err := orm.MarshalOnlyKeys(vi.Interface())
+			if err != nil {
+				return err
+			}
+
+			var dr dynamodb.DeleteRequest
+			dr.SetKey(attrs)
+			wr.SetDeleteRequest(&dr)
+		}
+
+		requestItems = append(requestItems, &wr)
+	}
+
+	const batchSize = 25
+	for i := 0; i < len(requestItems); i += batchSize {
+		from := i
+		to := int(math.Min(float64(from+batchSize), float64(len(requestItems))))
+
+		requestTables := map[string][]*dynamodb.WriteRequest{
+			tableName: requestItems[from:to],
+		}
+
+		var bwii dynamodb.BatchWriteItemInput
+		bwii.SetRequestItems(requestTables)
+
+		_, err := dynamodbClient.BatchWriteItem(&bwii)
 		if err != nil {
 			return err
 		}
-
-		var pr dynamodb.PutRequest
-		pr.SetItem(attrs)
-
-		var wr dynamodb.WriteRequest
-		wr.SetPutRequest(&pr)
-
-		requestItems[tableName] = append(requestItems[tableName], &wr)
-	}
-
-	var bwii dynamodb.BatchWriteItemInput
-	bwii.SetRequestItems(requestItems)
-
-	_, err := dynamodbClient.BatchWriteItem(&bwii)
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -247,7 +282,7 @@ func BatchPutItemsToDynamoDb(tableName string, v interface{}) error {
 
 func UpdateItemInDynamoDb(tableName string, v interface{}, keyVals map[string]interface{}) error {
 	keys := orm.CreateKeyValuesFromMap(keyVals)
-	attrs, err := orm.MarshalNoKeys(v)
+	attrs, err := orm.MarshalOnlyAttrs(v)
 	if err != nil {
 		return err
 	}
@@ -293,6 +328,24 @@ func UpdateItemAttrsInDynamoDb(tableName string, keyVals map[string]interface{},
 	uii.SetUpdateExpression("SET " + strings.Join(updateExpressionList, ", "))
 
 	_, err := dynamodbClient.UpdateItem(&uii)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteItemFromDynamoDb(tableName string, v interface{}) error {
+	keys, err := orm.MarshalOnlyKeys(v)
+	if err != nil {
+		return err
+	}
+
+	var dii dynamodb.DeleteItemInput
+	dii.SetKey(keys)
+	dii.SetTableName(tableName)
+
+	_, err = dynamodbClient.DeleteItem(&dii)
 	if err != nil {
 		return err
 	}
