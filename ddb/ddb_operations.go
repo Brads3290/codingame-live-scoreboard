@@ -3,6 +3,7 @@ package ddb
 import (
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/schema/dbschema"
+	"codingame-live-scoreboard/schema/errors"
 )
 
 func GetAllRoundsForEvent(evtGuid string) ([]dbschema.RoundModel, error) {
@@ -47,6 +48,55 @@ func GetAllPlayersInEvent(evtGuid string) ([]dbschema.PlayerModel, error) {
 	}
 
 	return sl, nil
+}
+
+func GetAllResultsForRound(roundId string) ([]dbschema.ResultModel, error) {
+	var rms []dbschema.ResultModel
+
+	err := QueryItemsFromDynamoDb(constants.DB_TABLE_RESULTS, &rms, map[string]interface{}{
+		"Round_ID": roundId,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return rms, nil
+}
+
+func GetAllResultsForRounds(roundIds ...string) ([]dbschema.ResultModel, error) {
+
+	type threadResult struct {
+		err error
+		ls  []dbschema.ResultModel
+	}
+
+	chRes := make(chan threadResult)
+
+	for _, v := range roundIds {
+		go func(roundId string) {
+			resInner, err := GetAllResultsForRound(roundId)
+			chRes <- threadResult{err, resInner}
+		}(v)
+	}
+
+	results := make([]dbschema.ResultModel, 0)
+	errs := make([]error, 0)
+	for i := 0; i < len(roundIds); i++ {
+		r := <-chRes
+
+		if r.err != nil {
+			errs = append(errs, r.err)
+		} else if r.ls != nil {
+			results = append(results, r.ls...)
+		}
+	}
+
+	if len(errs) > 0 {
+		return nil, errors.NewComposite(errs...)
+	}
+
+	return results, nil
 }
 
 //func UpdateDatabaseWithScoreData(evtGuid string, data *schema.ScoreData) error {
