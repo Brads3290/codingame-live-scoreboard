@@ -20,7 +20,7 @@ func setValueFromAttributeValue(av *dynamodb.AttributeValue, v reflect.Value, t 
 		}
 
 		// av is NULL and v can be nil, so we assign nil to v
-		v.Set(reflect.ValueOf(nil))
+		v.Set(reflect.Zero(t))
 		return nil
 	}
 

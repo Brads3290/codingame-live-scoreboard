@@ -17,13 +17,17 @@ func main() {
 	//testPutRound("round_2")
 	//testPutRound("round_3")
 
-	//testPutRound("15368558b7207af754ef51f1dbc58d3f18a003d")
-	testDeleteEvent("3d2183f5-9238-4959-95dd-79d9b088a17f")
+	//testPutRound("245eac65-0a53-4778-93a0-27aab09fff1a", "15368558b7207af754ef51f1dbc58d3f18a003d")
+	//testDeleteEvent("3d2183f5-9238-4959-95dd-79d9b088a17f")
+
+	//testPutEvent()
+
+	testUpdateEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
 }
 
 func testPutEvent() {
 	req := events.APIGatewayV2HTTPRequest{
-		Body: `{"name": "Test Event"}`,
+		Body: `{"name": "Test Event 3"}`,
 	}
 
 	resp, err := putevent.Handle(context.TODO(), req)
@@ -49,10 +53,10 @@ func testGetEvent() {
 	fmt.Printf("%v\v", resp)
 }
 
-func testPutRound(roundid string) {
+func testPutRound(eventId string, roundid string) {
 	req := events.APIGatewayV2HTTPRequest{
 		PathParameters: map[string]string{
-			"event_id": "3d2183f5-9238-4959-95dd-79d9b088a17f",
+			"event_id": eventId,
 		},
 
 		Body: fmt.Sprintf(`{"round_id": "%s"}`, roundid),
