@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"strconv"
 	"time"
 )
 
@@ -88,13 +89,14 @@ func getCodinGameDataOnThread(roundId string, ce chan interface{}) {
 	}
 
 	var retStruct schema.RoundData
+	retStruct.Finished = resStruct.Finished
 	retStruct.RoundId = resStruct.PublicHandle
 	retStruct.Mode = resStruct.Mode
 	retStruct.Players = make([]schema.PlayerRoundData, 0)
 
 	for _, v := range resStruct.Players {
 		var retPlayer schema.PlayerRoundData
-		retPlayer.PlayerId = v.PlayerId
+		retPlayer.PlayerId = strconv.Itoa(v.PlayerId)
 		retPlayer.Name = v.Nickname
 		retPlayer.Rank = v.Rank
 		retPlayer.Score = v.RoundScore

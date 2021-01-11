@@ -9,7 +9,7 @@ type ClashReportResponse struct {
 }
 
 type PlayerResponse struct {
-	PlayerId      string `json:"codingamerId"`
+	PlayerId      int    `json:"codingamerId"`
 	Nickname      string `json:"codingamerNickname"`
 	RoundScore    int    `json:"score"`
 	DurationMs    int    `json:"duration"`

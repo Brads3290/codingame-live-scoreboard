@@ -4,6 +4,7 @@ import (
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/schema/dbschema"
 	"codingame-live-scoreboard/schema/errors"
+	"time"
 )
 
 func GetEvent(evtGuid string) (*dbschema.EventModel, error) {
@@ -24,6 +25,20 @@ func SetEventUpdating(evtGuid string, isUpdating bool) error {
 		"Event_ID": evtGuid,
 	}, map[string]interface{}{
 		"Is_Updating": isUpdating,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func MarkEventUpdatedNow(evtGuid string) error {
+	err := UpdateItemAttrsInDynamoDb(constants.DB_TABLE_EVENTS, map[string]interface{}{
+		"Event_ID": evtGuid,
+	}, map[string]interface{}{
+		"Last_Updated": time.Now(),
 	})
 
 	if err != nil {

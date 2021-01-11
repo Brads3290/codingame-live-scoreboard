@@ -7,6 +7,11 @@ import (
 
 func UpdateDynamoDbFromScoreData(evtGuid string, data *schema.ScoreData) error {
 
+	// If data does not contain any rounds, we have nothing to update
+	if len(data.Rounds) == 0 {
+		return nil
+	}
+
 	// Start by pulling some data that we need on separate threads
 	chanPlayerResults := make(chan interface{}, 1)
 	go func() {
@@ -90,14 +95,20 @@ func UpdateDynamoDbFromScoreData(evtGuid string, data *schema.ScoreData) error {
 		return err
 	}
 
+	// Set 'Last Updated' for event
+	err = MarkEventUpdatedNow(evtGuid)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func getPlayerDataFromChan(c chan interface{}) ([]*dbschema.PlayerModel, error) {
+func getPlayerDataFromChan(c chan interface{}) ([]dbschema.PlayerModel, error) {
 	res := <-c
 
 	switch rt := res.(type) {
-	case []*dbschema.PlayerModel:
+	case []dbschema.PlayerModel:
 		return rt, nil
 	case error:
 		return nil, rt

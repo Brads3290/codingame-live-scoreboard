@@ -117,6 +117,11 @@ func queryItemsFromDynamoDbInternal(tbl string, v interface{}, keyVals map[strin
 		dut = ut.Elem()
 	}
 
+	// Assign a new slice to rv, so that we replace any existing values and also
+	// so if it's nil, we end up with an empty slice rather than nil
+	newRv := reflect.MakeSlice(rt.Elem(), 0, 0)
+	rv.Set(newRv)
+
 	for _, item := range qo.Items {
 
 		// Create a new object of the underlying slice value
@@ -204,6 +209,11 @@ func BatchPutItemsToDynamoDb(tableName string, v interface{}) error {
 
 	rv := reflect.ValueOf(v)
 
+	// Make sure slice has values
+	if rv.Len() == 0 {
+		return nil
+	}
+
 	// Iterate the slice..
 
 	requestItems := make(map[string][]*dynamodb.WriteRequest)
@@ -262,7 +272,7 @@ func UpdateItemAttrsInDynamoDb(tableName string, keyVals map[string]interface{},
 	exprAttrVals := make(map[string]*dynamodb.AttributeValue)
 
 	// Iterate the keys and add them to the attribute name/value lists, and construct the key expression list
-	updateExpressionList := make([]string, len(keyVals))
+	updateExpressionList := make([]string, len(attrVals))
 	i := 0
 	for k, kv := range attrVals {
 		nk := "#ATTR_" + strconv.Itoa(i)
