@@ -29,6 +29,6 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 			return 500, nil, err
 		}
 
-		return 0, nil, nil
+		return 200, nil, nil
 	})
 }

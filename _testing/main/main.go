@@ -1,6 +1,7 @@
 package main
 
 import (
+	deleteevent "codingame-live-scoreboard/api/deleteevent/handler"
 	getevent "codingame-live-scoreboard/api/getevent/handler"
 	putevent "codingame-live-scoreboard/api/putevent/handler"
 	putround "codingame-live-scoreboard/api/putround/handler"
@@ -17,7 +18,7 @@ func main() {
 	//testPutRound("round_3")
 
 	//testPutRound("15368558b7207af754ef51f1dbc58d3f18a003d")
-	testUpdateEvent("3d2183f5-9238-4959-95dd-79d9b088a17f")
+	testDeleteEvent("3d2183f5-9238-4959-95dd-79d9b088a17f")
 }
 
 func testPutEvent() {
@@ -58,6 +59,22 @@ func testPutRound(roundid string) {
 	}
 
 	resp, err := putround.Handle(context.TODO(), req)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%v\v", resp)
+}
+
+func testDeleteEvent(eventId string) {
+	req := events.APIGatewayV2HTTPRequest{
+		PathParameters: map[string]string{
+			"event_id": eventId,
+		},
+	}
+
+	resp, err := deleteevent.Handle(context.TODO(), req)
 
 	if err != nil {
 		log.Fatal(err)
