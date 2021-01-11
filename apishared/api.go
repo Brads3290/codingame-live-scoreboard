@@ -1,4 +1,4 @@
-package api
+package apishared
 
 import (
 	"codingame-live-scoreboard/schema/errors"

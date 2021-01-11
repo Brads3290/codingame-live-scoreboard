@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"codingame-live-scoreboard/api"
+	"codingame-live-scoreboard/apishared"
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/dbschema"
@@ -17,7 +17,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 
 	// request path parameters will contain event_id, with the guid of the event to add the round tp
 
-	return api.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
+	return apishared.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
 
 		// get the event_id path param and parse it to validate the guid
 		eventIdStr, ok := request.PathParameters["event_id"]

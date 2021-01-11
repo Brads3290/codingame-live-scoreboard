@@ -1,8 +1,7 @@
 package handler
 
 import (
-	"codingame-live-scoreboard/api"
-	"codingame-live-scoreboard/api/apishared"
+	"codingame-live-scoreboard/apishared"
 	"codingame-live-scoreboard/codingame"
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/ddb"
@@ -18,7 +17,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 
 	// The path params will have an event_id
 
-	return api.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
+	return apishared.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
 		log := logrus.WithField(constants.API_LOGGER_FIELD, "updateevent")
 
 		// get the event_id path param and parse it to validate the guid

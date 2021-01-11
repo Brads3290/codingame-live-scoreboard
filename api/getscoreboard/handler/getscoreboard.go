@@ -1,8 +1,7 @@
 package handler
 
 import (
-	"codingame-live-scoreboard/api"
-	"codingame-live-scoreboard/api/apishared"
+	"codingame-live-scoreboard/apishared"
 	"context"
 	"errors"
 	"github.com/aws/aws-lambda-go/events"
@@ -13,7 +12,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 
 	// The path params should contain an event_id
 
-	return api.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
+	return apishared.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
 
 		// Check for event_id and validate it by parsing it to a guid
 		eventIdStr, ok := request.PathParameters["event_id"]

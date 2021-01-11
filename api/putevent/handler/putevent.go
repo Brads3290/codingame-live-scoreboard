@@ -1,7 +1,7 @@
 package putevent
 
 import (
-	"codingame-live-scoreboard/api"
+	"codingame-live-scoreboard/apishared"
 	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/dbschema"
@@ -15,7 +15,7 @@ import (
 // PUT /putevent
 // Body: { "name": "Event_Name" }
 func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	return api.UnifyLambdaResponse(ctx, func() (sts int, resp interface{}, err error) {
+	return apishared.UnifyLambdaResponse(ctx, func() (sts int, resp interface{}, err error) {
 		log := logrus.WithField(constants.API_LOGGER_FIELD, "putevent")
 
 		// Get the name from the request body

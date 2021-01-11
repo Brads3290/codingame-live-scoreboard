@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"codingame-live-scoreboard/api"
+	"codingame-live-scoreboard/apishared"
 	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/errors"
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	return api.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
+	return apishared.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
 
 		// Get event_id and round_id from path param
 		eventIdStr, ok := request.PathParameters["event_id"]
