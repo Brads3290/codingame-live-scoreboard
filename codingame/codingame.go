@@ -1,8 +1,9 @@
-package codezone_util
+package codingame
 
 import (
 	"bytes"
 	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema"
 	"encoding/json"
 	"errors"
@@ -15,7 +16,7 @@ import (
 var c = http.Client{Timeout: 30 * time.Second}
 
 func GetCodinGameData(evtGuid string) (*schema.ScoreData, error) {
-	activeRounds, err := GetActiveRounds(evtGuid)
+	activeRounds, err := ddb.GetActiveRoundsForEvent(evtGuid)
 	if err != nil {
 		return nil, err
 	}

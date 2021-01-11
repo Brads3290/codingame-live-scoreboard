@@ -1,7 +1,6 @@
 package ddbmarshal
 
 import (
-	"codingame-live-scoreboard/schema/shared_utils"
 	"errors"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"reflect"
@@ -108,7 +107,7 @@ func stringFromAttributeValue(av *dynamodb.AttributeValue) (string, error) {
 func timeFromAttributeValue(av *dynamodb.AttributeValue) (*time.Time, error) {
 
 	// If the attribute has no value, we return nil
-	if !shared_utils.AttributeHasNonEmptyValue(av) {
+	if !AttributeHasNonEmptyValue(av) {
 		return nil, nil
 	}
 

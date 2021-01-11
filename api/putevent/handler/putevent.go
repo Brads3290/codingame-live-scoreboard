@@ -3,6 +3,7 @@ package putevent
 import (
 	"codingame-live-scoreboard/codezone_util"
 	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/dbschema"
 	"context"
 	"encoding/json"
@@ -42,7 +43,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 			LastUpdated: nil,
 		}
 
-		err = codezone_util.PutItemToDynamoDb(constants.DB_TABLE_EVENTS, model)
+		err = ddb.PutItemToDynamoDb(constants.DB_TABLE_EVENTS, model)
 		if err != nil {
 			log.Error("Failed to put item to DynamoDB:", err)
 			return

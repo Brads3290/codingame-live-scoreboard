@@ -3,6 +3,7 @@ package handler
 import (
 	"codingame-live-scoreboard/codezone_util"
 	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/dbschema"
 	"codingame-live-scoreboard/schema/errors"
 	"context"
@@ -37,7 +38,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		evt.EventId = u.String()
 
 		// Get the item from DynamoDB
-		err = codezone_util.PopulateItemFromDynamoDb(constants.DB_TABLE_EVENTS, &evt)
+		err = ddb.PopulateItemFromDynamoDb(constants.DB_TABLE_EVENTS, &evt)
 
 		// If no match found, log but just return nothing
 		if errors.IsNotFound(err) {

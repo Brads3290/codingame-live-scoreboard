@@ -2,7 +2,9 @@ package main
 
 import (
 	"codingame-live-scoreboard/codezone_util"
+	"codingame-live-scoreboard/codingame"
 	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/ddb"
 	"context"
 	"errors"
 	"github.com/aws/aws-lambda-go/events"
@@ -27,7 +29,7 @@ func handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		}
 
 		// Get the event from the dynamodb
-		evtData, err := codezone_util.GetItemFromDynamoDb(constants.DB_TABLE_EVENTS, "ID", evtGuid)
+		evtData, err := ddb.GetItemFromDynamoDb(constants.DB_TABLE_EVENTS, "ID", evtGuid)
 		if err != nil {
 			return sts, resp, err
 		}
@@ -51,7 +53,7 @@ func handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		now := time.Now()
 
 		if now.Sub(lastUpdated) > constants.MAX_EVENT_RECORD_AGE {
-			_, err := codezone_util.GetCodinGameData(evtGuid)
+			_, err := codingame.GetCodinGameData(evtGuid)
 			if err != nil {
 				return sts, resp, err
 			}

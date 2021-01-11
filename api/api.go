@@ -1,9 +1,9 @@
-package codezone_util
+package api
 
 import (
+	"codingame-live-scoreboard/schema/errors"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 )

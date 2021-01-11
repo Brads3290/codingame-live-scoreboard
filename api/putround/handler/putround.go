@@ -3,6 +3,7 @@ package handler
 import (
 	"codingame-live-scoreboard/codezone_util"
 	"codingame-live-scoreboard/constants"
+	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/dbschema"
 	"context"
 	"encoding/json"
@@ -48,7 +49,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 		r.EventId = eventId.String()
 
 		// Write to the database
-		err = codezone_util.PutItemToDynamoDb(constants.DB_TABLE_ROUNDS, r)
+		err = ddb.PutItemToDynamoDb(constants.DB_TABLE_ROUNDS, r)
 		if err != nil {
 			return 500, nil, err
 		}
