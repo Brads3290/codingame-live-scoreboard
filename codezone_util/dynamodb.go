@@ -127,13 +127,17 @@ func BatchGetItemsFromDynamoDb(tbl string, keyVals ...interface{}) ([]map[string
 	return ret, nil
 }
 
-func PutItemToDynamoDb(tableName string, dbWritable schema.DynamoDbReadable) error {
-	pii := &dynamodb.PutItemInput{
-		Item:      dbWritable.ToDynamoDbMap(),
-		TableName: &tableName,
+func PutItemToDynamoDb(tableName string, v interface{}) error {
+	avMap, err := ddbmarshal.Marshal(v)
+	if err != nil {
+		return err
 	}
 
-	_, err := dynamodbClient.PutItem(pii)
+	var pii dynamodb.PutItemInput
+	pii.SetTableName(tableName)
+	pii.SetItem(avMap)
+
+	_, err = dynamodbClient.PutItem(&pii)
 	if err != nil {
 		return err
 	}
