@@ -257,12 +257,30 @@ func UpdateItemInDynamoDb(tableName string, v interface{}, keyVals map[string]in
 
 func UpdateItemAttrsInDynamoDb(tableName string, keyVals map[string]interface{}, attrVals map[string]interface{}) error {
 	keys := orm.CreateKeyValuesFromMap(keyVals)
-	attrs := orm.CreateKeyValuesFromMap(attrVals)
+
+	exprAttrNames := make(map[string]*string)
+	exprAttrVals := make(map[string]*dynamodb.AttributeValue)
+
+	// Iterate the keys and add them to the attribute name/value lists, and construct the key expression list
+	updateExpressionList := make([]string, len(keyVals))
+	i := 0
+	for k, kv := range attrVals {
+		nk := "#ATTR_" + strconv.Itoa(i)
+		exprAttrNames[nk] = &k
+
+		nv := ":VAL_" + strconv.Itoa(i)
+		exprAttrVals[nv] = orm.CreateAttributeValueFromValue(kv)
+
+		updateExpressionList[i] = fmt.Sprintf("%s = %s", nk, nv)
+		i++
+	}
 
 	var uii dynamodb.UpdateItemInput
 	uii.SetTableName(tableName)
 	uii.SetKey(keys)
-	uii.SetExpressionAttributeValues(attrs)
+	uii.SetExpressionAttributeNames(exprAttrNames)
+	uii.SetExpressionAttributeValues(exprAttrVals)
+	uii.SetUpdateExpression("SET " + strings.Join(updateExpressionList, ", "))
 
 	_, err := dynamodbClient.UpdateItem(&uii)
 	if err != nil {

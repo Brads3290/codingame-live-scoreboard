@@ -57,7 +57,7 @@ func GetCodinGameData(evtGuid string) (*schema.ScoreData, error) {
 }
 
 func getCodinGameDataOnThread(roundId string, ce chan interface{}) {
-	httpUrl := path.Join(constants.CODINGAME_BASE_URL, constants.CODINGAME_CLASHREPORT_PATH)
+	httpUrl := constants.CODINGAME_SCHEME + path.Join(constants.CODINGAME_BASE_URL, constants.CODINGAME_CLASHREPORT_PATH)
 
 	jsonData := []string{roundId}
 	b, err := json.Marshal(jsonData)
@@ -82,6 +82,10 @@ func getCodinGameDataOnThread(roundId string, ce chan interface{}) {
 
 	var resStruct cgschema.ClashReportResponse
 	err = json.Unmarshal(br, &resStruct)
+	if err != nil {
+		ce <- err
+		return
+	}
 
 	var retStruct schema.RoundData
 	retStruct.RoundId = resStruct.PublicHandle
