@@ -7,9 +7,9 @@ import (
 )
 
 type EventModel struct {
-	EventId     string     `ddb:"Event_ID,key"`
-	Name        string     `ddb:"Name"`
-	LastUpdated *time.Time `ddb:"Last_Updated"`
+	EventId     string     `ddb:"Event_ID,key" json:"event_id"`
+	Name        string     `ddb:"Name" json:"name"`
+	LastUpdated *time.Time `ddb:"Last_Updated" json:"last_updated"`
 }
 
 func (e *EventModel) ToDynamoDbMap() map[string]*dynamodb.AttributeValue {
