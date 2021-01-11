@@ -18,6 +18,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 
 	return apishared.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
 		log := logrus.WithField(constants.API_LOGGER_FIELD, "getevent")
+		log.Info(request)
 
 		// Check that the url has a {guid}
 		guidStr, ok := request.PathParameters["guid"]
