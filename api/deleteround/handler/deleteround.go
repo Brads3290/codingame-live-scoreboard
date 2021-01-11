@@ -29,7 +29,7 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 			return 401, nil, errors.New("invalid event_id")
 		}
 
-		err = ddb.DeleteRound(roundId, eventId.String())
+		err = ddb.DeleteRound(eventId.String(), roundId)
 		if err != nil {
 			return 500, nil, err
 		}
