@@ -156,6 +156,24 @@ func GetAllResultsForRounds(roundIds ...string) ([]dbschema.ResultModel, error) 
 	return results, nil
 }
 
+func DeleteRoundRecords(results []dbschema.RoundModel) error {
+	err := BatchDeleteItemsFromDynamoDb(constants.DB_TABLE_ROUNDS, results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteResultRecords(results []dbschema.ResultModel) error {
+	err := BatchDeleteItemsFromDynamoDb(constants.DB_TABLE_RESULTS, results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func AddPlayersToEvent(evtGuid string, players []dbschema.PlayerModel) error {
 
 	// Ensure that the players are in this event

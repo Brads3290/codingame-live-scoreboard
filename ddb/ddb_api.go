@@ -323,11 +323,20 @@ func DeleteItemFromDynamoDb(tableName string, v interface{}) error {
 		return err
 	}
 
+	return deleteKeysFromDynamoDbInternal(tableName, keys)
+}
+
+func DeleteKeysFromDynamoDb(tableName string, keys map[string]interface{}) error {
+	processedKeys := orm.CreateKeyValuesFromMap(keys)
+	return deleteKeysFromDynamoDbInternal(tableName, processedKeys)
+}
+
+func deleteKeysFromDynamoDbInternal(tableName string, keys map[string]*dynamodb.AttributeValue) error {
 	var dii dynamodb.DeleteItemInput
 	dii.SetKey(keys)
 	dii.SetTableName(tableName)
 
-	_, err = dynamodbClient.DeleteItem(&dii)
+	_, err := dynamodbClient.DeleteItem(&dii)
 	if err != nil {
 		return err
 	}

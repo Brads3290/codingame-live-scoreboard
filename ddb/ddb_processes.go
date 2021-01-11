@@ -1,6 +1,7 @@
 package ddb
 
 import (
+	"codingame-live-scoreboard/constants"
 	"codingame-live-scoreboard/schema"
 	"codingame-live-scoreboard/schema/dbschema"
 )
@@ -97,6 +98,76 @@ func UpdateDynamoDbFromScoreData(evtGuid string, data *schema.ScoreData) error {
 
 	// Set 'Last Updated' for event
 	err = MarkEventUpdatedNow(evtGuid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteEvent(eventId string) error {
+
+	// Delete the event
+	err := DeleteKeysFromDynamoDb(constants.DB_TABLE_EVENTS, map[string]interface{}{
+		"Event_ID": eventId,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// Get all the rounds associated with the event
+	rounds, err := GetAllRoundsForEvent(eventId)
+	if err != nil {
+		return err
+	}
+
+	// Delete the rounds
+	err = DeleteRoundRecords(rounds)
+	if err != nil {
+		return err
+	}
+
+	// Extract the roundIds
+	roundIds := make([]string, 0)
+	for _, v := range rounds {
+		roundIds = append(roundIds, v.RoundId)
+	}
+
+	// Get all the results from the rounds that we just deleted
+	results, err := GetAllResultsForRounds(roundIds...)
+	if err != nil {
+		return err
+	}
+
+	// Delete each
+	err = DeleteResultRecords(results)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteRound(eventId string, roundId string) error {
+
+	// Delete the round
+	err := DeleteKeysFromDynamoDb(constants.DB_TABLE_ROUNDS, map[string]interface{}{
+		"Event_ID": eventId,
+		"Round_ID": roundId,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// Query results related to this round and delete those too
+	res, err := GetAllResultsForRound(roundId)
+	if err != nil {
+		return err
+	}
+
+	err = DeleteResultRecords(res)
 	if err != nil {
 		return err
 	}
