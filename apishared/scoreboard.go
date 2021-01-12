@@ -96,7 +96,8 @@ func GetApiScoreboardData(evtGuid string) (*apischema.ApiScoreboardModel, error)
 
 func CalculatePlayerScoresForEvent(results []dbschema.ResultModel) map[string]int {
 	type playerRoundResult struct {
-		rank int
+		rank       int
+		stillGoing bool
 	}
 
 	// How many players were in each round?
@@ -106,7 +107,12 @@ func CalculatePlayerScoresForEvent(results []dbschema.ResultModel) map[string]in
 			roundPlayerResults[r.RoundId] = make(map[string]playerRoundResult)
 		}
 
-		roundPlayerResults[r.RoundId][r.PlayerId] = playerRoundResult{rank: r.PlayerRoundRank}
+		result := playerRoundResult{rank: r.PlayerRoundRank}
+		if r.PlayerRoundStatus != "COMPLETED" {
+			result.stillGoing = true
+		}
+
+		roundPlayerResults[r.RoundId][r.PlayerId] = result
 	}
 
 	// For each round, calculate the points each player gets and add it to their total
@@ -117,6 +123,11 @@ func CalculatePlayerScoresForEvent(results []dbschema.ResultModel) map[string]in
 		for playerId, playerResult := range playerResults {
 			if _, ok := playerPoints[playerId]; !ok {
 				playerPoints[playerId] = 0
+			}
+
+			// If the player hasn't finished the round, don't add it to their score
+			if playerResult.stillGoing {
+				continue
 			}
 
 			playerPoints[playerId] += participants - playerResult.rank + 1
