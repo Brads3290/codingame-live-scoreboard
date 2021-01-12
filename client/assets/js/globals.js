@@ -1,3 +1,4 @@
+const HTTP_BASE_API = 'https://cg-leaderboard-api.codezone.brads3290.com';
 const HTTP_BASE = 'https://cg-leaderboard.codezone.brads3290.com';
 
 let globals = {
