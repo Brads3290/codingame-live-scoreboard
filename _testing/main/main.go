@@ -4,6 +4,7 @@ import (
 	deleteevent "codingame-live-scoreboard/api/deleteevent/handler"
 	deleteround "codingame-live-scoreboard/api/deleteround/handler"
 	getevent "codingame-live-scoreboard/api/getevent/handler"
+	getevents "codingame-live-scoreboard/api/getevents/handler"
 	putevent "codingame-live-scoreboard/api/putevent/handler"
 	putround "codingame-live-scoreboard/api/putround/handler"
 	updateevent "codingame-live-scoreboard/api/updateevent/handler"
@@ -15,13 +16,15 @@ import (
 
 func main() {
 
+	//testGetEvents()
+
 	//testPutEvent()
 	//testPutRound("245eac65-0a53-4778-93a0-27aab09fff1a", "15368558b7207af754ef51f1dbc58d3f18a003d")
 
-	testDeleteEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
+	//testDeleteEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
 	//testDeleteRound("245eac65-0a53-4778-93a0-27aab09fff1a" ,"15368558b7207af754ef51f1dbc58d3f18a003d")
 
-	//testUpdateEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
+	testUpdateEvent("2f7798d3-8efa-4d73-9918-6bc7431dd764")
 }
 
 func testPutEvent() {
@@ -45,6 +48,17 @@ func testGetEvent() {
 	}
 
 	resp, err := getevent.Handle(context.TODO(), req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%v\v", resp)
+}
+
+func testGetEvents() {
+	req := events.APIGatewayV2HTTPRequest{}
+
+	resp, err := getevents.Handle(context.TODO(), req)
 	if err != nil {
 		log.Fatal(err)
 	}

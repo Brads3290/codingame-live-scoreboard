@@ -59,6 +59,18 @@ func UpdateDynamoDbFromScoreData(evtGuid string, data *schema.ScoreData) error {
 				continue
 			}
 
+			// Check if we're already adding this player
+			for _, p := range newPlayers {
+				if p.PlayerId == player.PlayerId {
+					found = true
+					break
+				}
+			}
+
+			if found {
+				continue
+			}
+
 			newPlayer := dbschema.PlayerModel{
 				PlayerId: player.PlayerId,
 				Name:     player.Name,
