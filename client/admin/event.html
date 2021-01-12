@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CodeZone Leaderboard Admin</title>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+
+    <script src="../assets/js/globals.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="assets/js/event.js"></script>
+</head>
+<body>
+<a href="events.html"><< Back</a>
+<h1>Welcome</h1>
+<p>
+    Scoreboard link: <a target="_blank" id="lnkScoreboard"></a>
+</p>
+<br />
+<h2>List of Rounds</h2>
+<button id="btnNewRound">Assign new round</button>
+<button id="btnUpdateEvent">Fetch Updates from CG</button>
+<br />
+<br />
+<table id="tblRounds" style="width: 100%;">
+    <thead>
+    <tr>
+        <td>Round Id</td>
+        <td>Running</td>
+        <td>Action</td>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+</body>
+</html>
