@@ -1,26 +1,19 @@
 
 
 const progressBarColors = [
-    '#8B0000',
-    '#DC143C',
-    '#FF4500',
-    '#32CD32',
-    '#008000',
-    '#808000',
-    '#00CED1',
-    '#1E90FF',
-    '#4169E1',
-    '#6A5ACD',
-    '#FF00FF',
-    '#9932CC',
-    '#800080',
-    '#FF1493',
-    '#696969',
-    '#2F4F4F',
-    '#DAA520',
-    '#D2691E',
-    '#A52A2A',
-    '#800000'
+    '#ffff00',
+    '#00ff00',
+    '#00ffff',
+    '#7fffd4',
+    '#a9a9a9',
+    '#e9967a',
+    '#adff2f',
+    '#f0e68c',
+    '#f08080',
+    '#90ee90',
+    '#87cefa',
+    '#dda0dd',
+    '#ff6347',
 ];
 
 let colorAssignments = {};
@@ -144,7 +137,7 @@ function displayScoreboard(scoreData) {
     }
 
     for (let i = 0; i < players.length; i++) {
-        players[i].entry.find('.scoreboard-entry-playername').html(scores[i].player.name).css({
+        players[i].entry.find('.scoreboard-entry-playername').html(scores[i].player.name + " (" + players[i].score.toString() + ")").css({
             'color': players[i].userColor
         });
 

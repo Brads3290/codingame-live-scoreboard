@@ -17,7 +17,7 @@ body, html {
 
 .scoreboard-container > .scoreboard-entry {
     width: 100%;
-    padding: 0.125em;
+    padding: 0.25em 0.125em;
     box-sizing: border-box;
     height: 1em;
 }
@@ -27,6 +27,9 @@ body, html {
     height: 100%;
     float: left;
     max-width: 74%;
+    -webkit-box-shadow: 0.5px 0.5px 1px 1px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0.5px 0.5px 1px 1px rgba(0,0,0,0.75);
+    box-shadow: 0.5px 0.5px 1px 1px rgba(0,0,0,0.75);
 }
 
 .scoreboard-container > .scoreboard-entry > .scoreboard-entry-playername {
@@ -39,4 +42,6 @@ body, html {
     width: 25%;
     text-overflow: ellipsis;
     margin-left: 1%;
+    font-family: monospace, serif;
+    text-shadow: 1px 1px rgba(0,0,0,1);
 }
