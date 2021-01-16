@@ -15,3 +15,6 @@
 10. Revisit the score calculation algorithm:
     - Correctly handle rank ties
     - Scale points based on round metric
+11. GitHub readme
+12. Find suitable license for GitHub
+13. Add match count
