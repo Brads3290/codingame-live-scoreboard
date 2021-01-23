@@ -53,7 +53,7 @@ let colorAssignments = {};
 function getScoreboardDataInitial(eventId, callback) {
     $.ajax({
         method: 'GET',
-        url: HTTP_BASE_API + '/scoreboard/' + eventId,
+        url: '/scoreboard/' + eventId,
         success: function (res) {
             if (!res.success) {
                 console.log('/scoreboard returned an error: ', res);
@@ -73,7 +73,7 @@ function getScoreboardDataInitial(eventId, callback) {
 function getScoreboardUpdate(eventId, callback) {
     $.ajax({
         method: 'GET',
-        url: HTTP_BASE_API + '/update/' + eventId,
+        url: '/update/' + eventId,
         success: function (res) {
             if (!res.success) {
                 console.log('/scoreboard returned an error: ', res);

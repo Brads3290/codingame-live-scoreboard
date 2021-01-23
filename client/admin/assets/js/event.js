@@ -12,7 +12,7 @@
             ajax: function (data, callback, settings) {
                 $.ajax({
                     method: 'GET',
-                    url: HTTP_BASE_API + '/round/' + EventId,
+                    url: '/round/' + EventId,
                     success: function (res) {
                         if (!res.success) {
                             alert('Failure: ' + res.error)
@@ -56,7 +56,7 @@
                     if (window.confirm("Are you sure you want to remove this round?\n" + $btnDelete.data('roundId'))) {
                         $.ajax({
                             method: 'DELETE',
-                            url: HTTP_BASE_API + '/round/' + EventId + '/' + $btnDelete.data('roundId'),
+                            url: '/round/' + EventId + '/' + $btnDelete.data('roundId'),
                             success: function (res) {
                                 if (!res.success) {
                                     alert('Failure: ' + res.error)
@@ -78,7 +78,7 @@
 
         // Scoreboard link
         let sbLink = '../scoreboard.html?event_id=' + EventId;
-        $('#lnkScoreboard').attr('href', sbLink).html(HTTP_BASE + '/scoreboard.html?event_id=' + EventId)
+        $('#lnkScoreboard').attr('href', sbLink).html('/scoreboard.html?event_id=' + EventId)
     });
 
     // Buttons
@@ -93,7 +93,7 @@
             }
 
             $.ajax({
-                url: HTTP_BASE_API + '/round/' + EventId,
+                url: '/round/' + EventId,
                 method: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -118,7 +118,7 @@
         btnUpdateEvent = $('#btnUpdateEvent');
         btnUpdateEvent.on('click', function () {
             $.ajax({
-                url: HTTP_BASE_API + '/update/' + EventId,
+                url: '/update/' + EventId,
                 method: 'GET',
                 success: function (res) {
                     if (!res.success) {
