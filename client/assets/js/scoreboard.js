@@ -1,5 +1,3 @@
-
-
 const progressBarColors = [
     '#ffff00',
     '#00ff00',
@@ -18,8 +16,9 @@ const progressBarColors = [
 
 let colorAssignments = {};
 
+// Acts as our main function
 (function () {
-    let query = globals.getUrlVars()
+    let query = globals.getUrlVars();
     let eventId = query['event_id'];
 
     if (!eventId) {
@@ -90,8 +89,17 @@ function getScoreboardUpdate(eventId, callback) {
 }
 
 function displayScoreboard(scoreData) {
+
+    // Clear scoreboard container
+    let $scoreboard = $('.scoreboard-container');
+    $scoreboard.html('');
+
     let scores = scoreData['scores'];
     if (!scores || !scores.length) {
+
+        // Display no data
+        $scoreboard.html('No data yet.')
+
         return;
     }
 
@@ -103,11 +111,7 @@ function displayScoreboard(scoreData) {
     scores = scores.slice(0, 8)
 
     // get the top score
-    let topScore = scores[0].score.event_points
-
-    // Clear scoreboard container
-    let $scoreboard = $('.scoreboard-container');
-    $scoreboard.html('');
+    let topScore = scores[0].score.event_points;
 
     let maxWidthPercent = 75;
 
