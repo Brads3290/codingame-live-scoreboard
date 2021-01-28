@@ -141,10 +141,10 @@ function displayScoreboard(scoreData) {
         });
     }
 
-    // Min width is the length of the last player
-    let minWidth = players[players.length - 1].width;
-    if (minWidth >= 2) {
-        minWidth -= 2;
+    // Chop off the start of the leaderboard bars
+    let redundantPart = players[players.length - 1].width;
+    if (redundantPart >= 2) {
+        redundantPart -= 2;
     }
 
     for (let i = 0; i < players.length; i++) {
@@ -152,8 +152,15 @@ function displayScoreboard(scoreData) {
             'color': players[i].userColor
         });
 
+        let w = players[i].width - redundantPart;
+
+        // Set a minimum width
+        if (w < 2) {
+            w = 2;
+        }
+
         players[i].entry.find('.scoreboard-entry-progressbar').css({
-            width: players[i].width - minWidth + '%',
+            width: w + '%',
             'background-color': players[i].userColor
         });
     }
