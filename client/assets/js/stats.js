@@ -15,17 +15,26 @@
         throw Error('No event id');
     }
 
-    // Get initial stats
-    getStats(eventId, function (data) {
-        displayStats(data);
-    });
+    $(function () {
+        // Update the stats container color if we have a stats_color in query string
+        if (query['stats_color']) {
+            $('.stats-container').css('color', query['stats_color'])
+        }
 
-    // Start a timer to update stats
-    let interval = window.setInterval(function () {
+        // Get initial stats
         getStats(eventId, function (data) {
             displayStats(data);
         });
-    }, 7500);
+
+        // Start a timer to update stats
+        let interval = window.setInterval(function () {
+            getStats(eventId, function (data) {
+                displayStats(data);
+            });
+        }, 7500);
+    });
+
+
 }());
 
 function getStats(eventId, callback) {
@@ -49,7 +58,7 @@ function getStats(eventId, callback) {
 }
 
 function displayStats(data) {
-
+    $('.stats-container').html('Rounds: ' + data['number_of_rounds'])
 }
 
 function displayError(msg) {
