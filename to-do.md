@@ -20,3 +20,4 @@
 13. Add match count
 14. Eventual integration with Twitch bot to put link in chat (!link)
     - Expose API endpoint
+15. Persistent colours across reloads
