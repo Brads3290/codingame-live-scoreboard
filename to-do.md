@@ -18,3 +18,5 @@
 11. GitHub readme
 12. Find suitable license for GitHub
 13. Add match count
+14. Eventual integration with Twitch bot to put link in chat (!link)
+    - Expose API endpoint
