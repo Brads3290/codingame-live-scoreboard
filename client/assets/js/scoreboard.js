@@ -18,6 +18,7 @@ let colorAssignments = {};
 
 // Acts as our main function
 (function () {
+
     let query = globals.getUrlVars();
     let eventId = query['event_id'];
 
@@ -25,13 +26,12 @@ let colorAssignments = {};
         throw Error('No event id');
     }
 
-    window.onerror = function () {
-        console.error('Unhandled error. Details=', arguments);
-        displayError('Scoreboard: unhandled error.');
-    }
-
     // Wait till document is ready
     $(function () {
+        window.onerror = function () {
+            console.error('Unhandled error. Details=', arguments);
+            displayError('Scoreboard: unhandled error.');
+        }
 
         // Fetch initial data
         getScoreboardDataInitial(eventId, function (data) {
