@@ -56,7 +56,8 @@ function getScoreboardDataInitial(eventId, callback) {
         success: function (res) {
             if (!res.success) {
                 console.log('/api/scoreboard returned an error: ', res);
-                displayError('Error getting scoreboard data.')
+                displayError('Error getting scoreboard data.');
+                return;
             }
 
             callback(res.data);
@@ -65,7 +66,7 @@ function getScoreboardDataInitial(eventId, callback) {
             console.log('Failed to get scoreboard data: ', e);
             displayError('Scoreboard: Unknown error.');
         }
-    })
+    });
 
 }
 
