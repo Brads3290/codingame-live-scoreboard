@@ -103,11 +103,12 @@ function displayScoreboard(scoreData) {
         return;
     }
 
+    // Sort the scores, highest score at the top
     scores.sort(function (a, b) {
         return b.score.event_points - a.score.event_points;
     });
 
-    // Take the top 5
+    // Take the top 8
     scores = scores.slice(0, 8)
 
     // get the top score
@@ -121,7 +122,13 @@ function displayScoreboard(scoreData) {
         $scoreboard.append(entry);
 
         let thisScore = scores[i].score.event_points;
-        let scorePercentage = thisScore / topScore;
+
+        let scorePercentage;
+        if (topScore === 0) {
+            scorePercentage = 0
+        } else {
+            scorePercentage = thisScore / topScore;
+        }
 
         let userColor = getProgressBarColor(scores[i].player.name);
 
