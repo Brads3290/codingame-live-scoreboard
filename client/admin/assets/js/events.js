@@ -8,7 +8,7 @@
             ajax: function (data, callback, settings) {
                 $.ajax({
                     method: 'GET',
-                    url: '/event',
+                    url: '/api/event',
                     success: function (res) {
                         if (!res.success) {
                             alert('Failure: ' + res.error)
@@ -56,7 +56,7 @@
                     if (window.confirm("Are you sure you want to delete this?\n" + $btnDelete.data('eventName'))) {
                         $.ajax({
                             method: 'DELETE',
-                            url: '/event/' + $btnDelete.data('eventId'),
+                            url: '/api/event/' + $btnDelete.data('eventId'),
                             success: function (res) {
                                 if (!res.success) {
                                     alert('Failure: ' + res.error)
@@ -88,7 +88,7 @@
             }
 
             $.ajax({
-                url: '/event',
+                url: '/api/event',
                 method: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify({

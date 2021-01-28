@@ -12,7 +12,7 @@
             ajax: function (data, callback, settings) {
                 $.ajax({
                     method: 'GET',
-                    url: '/round/' + EventId,
+                    url: '/api/round/' + EventId,
                     success: function (res) {
                         if (!res.success) {
                             alert('Failure: ' + res.error)
@@ -56,7 +56,7 @@
                     if (window.confirm("Are you sure you want to remove this round?\n" + $btnDelete.data('roundId'))) {
                         $.ajax({
                             method: 'DELETE',
-                            url: '/round/' + EventId + '/' + $btnDelete.data('roundId'),
+                            url: '/api/round/' + EventId + '/' + $btnDelete.data('roundId'),
                             success: function (res) {
                                 if (!res.success) {
                                     alert('Failure: ' + res.error)
@@ -93,7 +93,7 @@
             }
 
             $.ajax({
-                url: '/round/' + EventId,
+                url: '/api/round/' + EventId,
                 method: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -118,7 +118,7 @@
         btnUpdateEvent = $('#btnUpdateEvent');
         btnUpdateEvent.on('click', function () {
             $.ajax({
-                url: '/update/' + EventId,
+                url: '/api/update/' + EventId,
                 method: 'GET',
                 success: function (res) {
                     if (!res.success) {
