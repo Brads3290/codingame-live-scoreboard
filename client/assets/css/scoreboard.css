@@ -17,9 +17,6 @@
     height: 100%;
     float: left;
     max-width: 74%;
-    -webkit-box-shadow: 0.5px 0.5px 1px 1px rgba(0,0,0,0.75);
-    -moz-box-shadow: 0.5px 0.5px 1px 1px rgba(0,0,0,0.75);
-    box-shadow: 0.5px 0.5px 1px 1px rgba(0,0,0,0.75);
 }
 
 .scoreboard-container > .scoreboard-entry > .scoreboard-entry-playername {
@@ -32,6 +29,4 @@
     width: 25%;
     text-overflow: ellipsis;
     margin-left: 1%;
-    font-family: monospace, serif;
-    text-shadow: 1px 1px rgba(0,0,0,1);
 }
