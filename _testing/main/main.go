@@ -7,6 +7,7 @@ import (
 	getevents "codingame-live-scoreboard/api/getevents/handler"
 	putevent "codingame-live-scoreboard/api/putevent/handler"
 	putround "codingame-live-scoreboard/api/putround/handler"
+	stats "codingame-live-scoreboard/api/stats/handler"
 	updateevent "codingame-live-scoreboard/api/updateevent/handler"
 	"context"
 	"fmt"
@@ -24,7 +25,9 @@ func main() {
 	//testDeleteEvent("245eac65-0a53-4778-93a0-27aab09fff1a")
 	//testDeleteRound("245eac65-0a53-4778-93a0-27aab09fff1a" ,"15368558b7207af754ef51f1dbc58d3f18a003d")
 
-	testUpdateEvent("2f7798d3-8efa-4d73-9918-6bc7431dd764")
+	//testUpdateEvent("2f7798d3-8efa-4d73-9918-6bc7431dd764")
+
+	testGetStats("0cbc045e-b127-4b2b-a033-015340c3f731")
 }
 
 func testPutEvent() {
@@ -125,6 +128,27 @@ func testUpdateEvent(eventId string) {
 	}
 
 	resp, err := updateevent.Handle(context.TODO(), req)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%v\v", resp)
+}
+
+func testGetStats(eventId string) {
+	req := events.APIGatewayV2HTTPRequest{
+		PathParameters: map[string]string{
+			"event_id": eventId,
+		},
+		RequestContext: events.APIGatewayV2HTTPRequestContext{
+			HTTP: events.APIGatewayV2HTTPRequestContextHTTPDescription{
+				Method: "GET",
+			},
+		},
+	}
+
+	resp, err := stats.Handle(context.TODO(), req)
 
 	if err != nil {
 		log.Fatal(err)
