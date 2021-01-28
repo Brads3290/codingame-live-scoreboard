@@ -7,5 +7,5 @@ func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 }
 
 func main() {
-	lambda.Start(Handle)
+	lambda.Start(handler.Handle)
 }
