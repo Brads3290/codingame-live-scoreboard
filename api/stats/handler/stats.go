@@ -84,7 +84,7 @@ func getStats(ctx context.Context, request events.APIGatewayV2HTTPRequest) (int,
 		case "round":
 			go getRoundStats(eventId, &data, rounds, results, ch)
 		case "language":
-			go getRoundStats(eventId, &data, rounds, results, ch)
+			go getLangStats(eventId, &data, rounds, results, ch)
 		default:
 			continue
 		}
@@ -189,6 +189,7 @@ func getLangStats(eventId uuid.UUID, response *schema.StatsResponse, rounds []db
 	}
 
 	response.Language = &langStats
+	chErr <- nil
 }
 
 func dedupeStringList(ls []string) []string {
