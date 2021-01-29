@@ -15,4 +15,5 @@ type PlayerResponse struct {
 	DurationMs    int    `json:"duration"`
 	SessionStatus string `json:"testSessionStatus"`
 	Rank          int    `json:"rank"`
+	LanguageId    string `json:"languageId"`
 }

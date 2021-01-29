@@ -101,6 +101,7 @@ func getCodinGameDataOnThread(roundId string, ce chan interface{}) {
 		retPlayer.Rank = v.Rank
 		retPlayer.Score = v.RoundScore
 		retPlayer.SessionStatus = v.SessionStatus
+		retPlayer.LanguageUsed = v.LanguageId
 
 		retStruct.Players = append(retStruct.Players, retPlayer)
 	}

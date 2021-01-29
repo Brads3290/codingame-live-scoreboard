@@ -6,4 +6,5 @@ type ResultModel struct {
 	PlayerRoundStatus string `ddb:"Player_Round_Status"`
 	PlayerRoundRank   int    `ddb:"Player_Round_Rank"`
 	PlayerRoundScore  int    `ddb:"Player_Round_Score"`
+	LanguageUsed      string `ddb:"Language_Used"`
 }

@@ -19,6 +19,7 @@ type PlayerRoundData struct {
 	Rank          int    `json:"rank"`
 	Score         int    `json:"score"`
 	SessionStatus string `json:"session_status"`
+	LanguageUsed  string `json:"language_used"`
 }
 
 type PlayerData struct {

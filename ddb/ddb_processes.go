@@ -97,6 +97,7 @@ func UpdateDynamoDbFromScoreData(evtGuid string, data *schema.ScoreData) error {
 				PlayerRoundStatus: player.SessionStatus,
 				PlayerRoundRank:   player.Rank,
 				PlayerRoundScore:  player.Score,
+				LanguageUsed:      player.LanguageUsed,
 			}
 
 			newResults = append(newResults, result)
