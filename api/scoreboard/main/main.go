@@ -1,7 +1,7 @@
 package main
 
 import (
-	"codingame-live-scoreboard/api/getrounds/handler"
+	"codingame-live-scoreboard/api/scoreboard/handler"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 

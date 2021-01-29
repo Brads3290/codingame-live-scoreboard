@@ -1,7 +1,7 @@
 package main
 
 import (
-	"codingame-live-scoreboard/api/updateevent/handler"
+	"codingame-live-scoreboard/api/event/handler"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 

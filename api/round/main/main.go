@@ -1,7 +1,7 @@
 package main
 
 import (
-	"codingame-live-scoreboard/api/deleteevent/handler"
+	"codingame-live-scoreboard/api/round/handler"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
