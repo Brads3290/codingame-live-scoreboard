@@ -156,6 +156,10 @@ func getLangStats(eventId uuid.UUID, response *schema.StatsResponse, rounds []db
 
 	languageCounts := make(map[string]int)
 	for _, result := range results {
+		if result.LanguageUsed == "" {
+			continue
+		}
+
 		if _, ok := languageCounts[result.LanguageUsed]; !ok {
 			languageCounts[result.LanguageUsed] = 0
 		}
