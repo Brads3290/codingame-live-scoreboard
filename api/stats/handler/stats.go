@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"codingame-live-scoreboard/api/stats/schema"
 	"codingame-live-scoreboard/apishared"
 	"codingame-live-scoreboard/ddb"
 	"codingame-live-scoreboard/schema/dbschema"
@@ -8,18 +9,9 @@ import (
 	"context"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/uuid"
+	"sort"
 	"strings"
 )
-
-type statsResponse struct {
-	NumberOfRounds int                             `json:"number_of_rounds"`
-	PlayerStats    map[string]*playerStatsResponse `json:"player_stats"`
-}
-
-type playerStatsResponse struct {
-	Username     string `json:"username"`
-	RoundsPlayed int    `json:"rounds_played"`
-}
 
 func Handle(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	return apishared.UnifyLambdaResponse(ctx, func() (int, interface{}, error) {
@@ -47,6 +39,19 @@ func getStats(ctx context.Context, request events.APIGatewayV2HTTPRequest) (int,
 		return 400, nil, err
 	}
 
+	// Take in a query string parameter to list what stats we want to return
+	fetchListStr, ok := request.QueryStringParameters["fetch"]
+	if !ok {
+		return 400, nil, errors.New("Missing fetch parameter")
+	}
+
+	fetchList := strings.Split(fetchListStr, ",")
+
+	// Dedupe fetch list so that we don't have multiple threads accessing the same field on the
+	// StatsResponse object
+	fetchList = dedupeStringList(fetchList)
+
+	// Fetch some data that all stats methods have in common
 	// Use the event ID to fetch all the rounds from the DB
 	rounds, err := ddb.GetAllRoundsForEvent(eventId.String())
 	if err != nil {
@@ -65,10 +70,52 @@ func getStats(ctx context.Context, request events.APIGatewayV2HTTPRequest) (int,
 		return 500, nil, err
 	}
 
+	// Request URL:
+	// /api/stats/{event_id}?fetch=round,language
+
+	data := schema.StatsResponse{}
+
+	// Fetch stats on different threads
+	chans := make([]chan error, 0)
+	for _, fetchStr := range fetchList {
+		ch := make(chan error)
+
+		switch fetchStr {
+		case "round":
+			go getRoundStats(eventId, &data, rounds, results, ch)
+		case "language":
+			go getRoundStats(eventId, &data, rounds, results, ch)
+		default:
+			continue
+		}
+
+		chans = append(chans, ch)
+	}
+
+	// Join the threads and check for errors
+	errs := make([]error, 0)
+	for _, c := range chans {
+		err := <-c
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	// If we have any errors, we create a composite error and return that
+	if len(errs) > 0 {
+		return 500, nil, errors.NewComposite(errs...)
+	}
+
+	return 200, data, nil
+}
+
+func getRoundStats(eventId uuid.UUID, response *schema.StatsResponse, rounds []dbschema.RoundModel, results []dbschema.ResultModel, chErr chan error) {
+
 	// Also fetch the players for the next part, where we will need the player name
 	players, err := ddb.GetAllPlayersInEvent(eventId.String())
 	if err != nil {
-		return 500, nil, err
+		chErr <- err
+		return
 	}
 
 	// Create a map of player ids to player objects
@@ -80,10 +127,10 @@ func getStats(ctx context.Context, request events.APIGatewayV2HTTPRequest) (int,
 	}
 
 	// Create the individual player stats object
-	playerStats := make(map[string]*playerStatsResponse)
+	playerStats := make(map[string]*schema.PlayerRoundStats)
 	for _, r := range results {
 		if _, ok := playerStats[r.PlayerId]; !ok {
-			playerStats[r.PlayerId] = &playerStatsResponse{
+			playerStats[r.PlayerId] = &schema.PlayerRoundStats{
 				Username:     playerMap[r.PlayerId].Name,
 				RoundsPlayed: 0,
 			}
@@ -93,10 +140,75 @@ func getStats(ctx context.Context, request events.APIGatewayV2HTTPRequest) (int,
 	}
 
 	// Create the data and return it
-	data := statsResponse{
+	roundStats := schema.RoundStats{
 		NumberOfRounds: len(rounds),
 		PlayerStats:    playerStats,
 	}
 
-	return 200, data, nil
+	response.Round = &roundStats
+	chErr <- nil
+}
+
+func getLangStats(eventId uuid.UUID, response *schema.StatsResponse, rounds []dbschema.RoundModel, results []dbschema.ResultModel, chErr chan error) {
+	langStats := schema.LanguageStats{
+		Popularity: make([]schema.LanguagePopularityStat, 0),
+	}
+
+	languageCounts := make(map[string]int)
+	for _, result := range results {
+		if _, ok := languageCounts[result.LanguageUsed]; !ok {
+			languageCounts[result.LanguageUsed] = 0
+		}
+
+		languageCounts[result.LanguageUsed] += 1
+	}
+
+	type languageEntry struct {
+		languageName string
+		count        int
+	}
+
+	languages := make([]languageEntry, 0)
+	for k, v := range languageCounts {
+		languages = append(languages, languageEntry{
+			languageName: k,
+			count:        v,
+		})
+	}
+
+	sort.Slice(languages, func(i, j int) bool {
+		return languages[i].count < languages[j].count
+	})
+
+	for i, l := range languages {
+		langStats.Popularity = append(langStats.Popularity, schema.LanguagePopularityStat{
+			Name: l.languageName,
+			Rank: i,
+			Uses: l.count,
+		})
+	}
+
+	response.Language = &langStats
+}
+
+func dedupeStringList(ls []string) []string {
+	newLs := make([]string, 0)
+
+	for _, v := range ls {
+		if !stringListContains(newLs, v) {
+			newLs = append(newLs, v)
+		}
+	}
+
+	return newLs
+}
+
+func stringListContains(ls []string, s string) bool {
+	for _, v := range ls {
+		if v == s {
+			return true
+		}
+	}
+
+	return false
 }
