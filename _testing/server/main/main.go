@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/gabriel-vasile/mimetype"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -19,6 +18,12 @@ import (
 )
 
 var handlerMap = make(map[string]func(writer http.ResponseWriter, request *http.Request))
+
+var mimeMap = map[string]string{
+	".css":  "text/css",
+	".html": "text/html",
+	".js":   "application/javascript",
+}
 
 func main() {
 
@@ -93,12 +98,15 @@ func handleStatic(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Get the mime type from the filename
-	m, err := mimetype.DetectFile(filePath)
-	if err != nil {
-		panic(err)
+	var mimeType string
+	ext := filepath.Ext(filePath)
+	if mt, ok := mimeMap[ext]; ok {
+		mimeType = mt
+	} else {
+		mimeType = "text/plain"
 	}
 
-	writer.Header().Set("Content-Type", m.String())
+	writer.Header().Set("Content-Type", mimeType)
 
 	writer.WriteHeader(200)
 
