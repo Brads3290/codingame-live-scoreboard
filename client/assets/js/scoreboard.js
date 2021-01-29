@@ -1,18 +1,4 @@
-const progressBarColors = [
-    '#ffff00',
-    '#00ff00',
-    '#00ffff',
-    '#7fffd4',
-    '#a9a9a9',
-    '#e9967a',
-    '#adff2f',
-    '#f0e68c',
-    '#f08080',
-    '#90ee90',
-    '#87cefa',
-    '#dda0dd',
-    '#ff6347',
-];
+
 
 let colorAssignments = {};
 
