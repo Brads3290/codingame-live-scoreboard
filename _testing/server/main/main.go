@@ -5,6 +5,7 @@ import (
 	round "codingame-live-scoreboard/api/round/handler"
 	scoreboard "codingame-live-scoreboard/api/scoreboard/handler"
 	stats "codingame-live-scoreboard/api/stats/handler"
+	update "codingame-live-scoreboard/api/update/handler"
 	"context"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
@@ -29,6 +30,7 @@ func main() {
 	handlerMap["/api/stats"] = createHandler(stats.Handle, regexp.MustCompile(`/api/stats/(?P<event_id>[\w-]+)`))
 	handlerMap["/api/scoreboard"] = createHandler(scoreboard.Handle, regexp.MustCompile(`/api/scoreboard/(?P<event_id>[\w-]+)`))
 	handlerMap["/api/event"] = createHandler(event.Handle, regexp.MustCompile(`/api/event/(?P<event_id>[\w-]+)`))
+	handlerMap["/api/update"] = createHandler(update.Handle, regexp.MustCompile(`/api/update/(?P<event_id>[\w-]+)`))
 	handlerMap["/api/round"] = createHandler(round.Handle, regexp.MustCompile(`/api/round/(?P<event_id>[\w-]+)`), regexp.MustCompile(`/api/round/(?P<event_id>[\w-]+)/(?P<round_id>[\w-]+)`))
 
 	http.HandleFunc("/", handleStatic)
