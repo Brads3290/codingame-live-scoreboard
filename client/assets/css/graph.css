@@ -1,0 +1,31 @@
+
+.graph-container {
+    padding: 0.5em;
+    width: 100%;
+}
+
+.graph-container > .graph-entry {
+    width: 100%;
+    padding: 0.25em 0.125em;
+    box-sizing: border-box;
+    height: 1em;
+}
+
+.graph-container > .graph-entry > .graph-entry-progressbar {
+    background-color: red;
+    height: 100%;
+    float: left;
+    max-width: 74%;
+}
+
+.graph-container > .graph-entry > .graph-entry-label {
+    display: inline-block;
+    position: relative;
+    top: 50%;
+    overflow: hidden;
+    white-space: nowrap;
+    transform: translateY(-50%);
+    width: 25%;
+    text-overflow: ellipsis;
+    margin-left: 1%;
+}

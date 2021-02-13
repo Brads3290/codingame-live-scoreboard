@@ -21,7 +21,5 @@
     - Expose API endpoint
 15. Persistent colours across reloads
     
----- Working on ----
-16. Show languages people have used
-    16.1 Graph most popular languages
-13. Add match count
+16. Multiple formats for graphs
+17. Whatever visual bugs we introduced during refactoring
